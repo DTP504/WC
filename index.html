@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC2026 — Dự đoán theo kèo chấp bet365</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{
+    --bg:#06090f; --bg-sidebar:#080c14; --bg-card:#0e1520; --bg-card2:#121a28;
+    --bg-elevated:#182030; --border:rgba(255,255,255,.06); --border-light:rgba(255,255,255,.1);
+    --text:#f0f4fc; --text-secondary:#7a8fa8; --text-dim:#3d5070;
+    --accent:#3dd9b3; --accent2:#5b8def; --accent3:#a78bfa;
+    --gold:#f6c343; --positive:#3dd9b3; --negative:#f87171; --warn:#fb923c;
+    --radius:18px; --radius-sm:12px; --gap:20px;
+    --sidebar-w:236px;
+    --glow-green:rgba(61,217,179,.15);
+    --glow-blue:rgba(91,141,239,.15);
+    --glow-purple:rgba(167,139,250,.15);
+    --glow-gold:rgba(246,195,67,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  body{display:flex;min-height:100vh;}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18);}
+
+  /* ===== SIDEBAR ===== */
+  .sidebar{
+    width:var(--sidebar-w);background:var(--bg-sidebar);
+    border-right:1px solid var(--border);
+    position:fixed;top:0;left:0;height:100vh;
+    padding:20px 14px;display:flex;flex-direction:column;gap:4px;
+    z-index:100;overflow-y:auto;
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    padding:6px 8px 18px;border-bottom:1px solid var(--border);margin-bottom:12px;
+  }
+  .brand-logo{
+    width:42px;height:42px;border-radius:13px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+    box-shadow:0 0 20px var(--glow-green);
+  }
+  .brand-text{font-size:14px;font-weight:700;line-height:1.3;letter-spacing:-.2px;}
+  .brand-text span{display:block;font-size:11px;color:var(--text-secondary);font-weight:500;margin-top:2px;}
+  .nav-label{
+    font-size:10px;text-transform:uppercase;letter-spacing:1.2px;
+    color:var(--text-dim);padding:14px 12px 5px;font-weight:700;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:11px;
+    padding:10px 12px;border-radius:var(--radius-sm);
+    color:var(--text-secondary);font-size:13.5px;font-weight:500;
+    cursor:pointer;transition:all .2s;border:1px solid transparent;
+    position:relative;
+  }
+  .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);}
+  .nav-item.active{
+    background:linear-gradient(135deg,rgba(61,217,179,.1),rgba(91,141,239,.08));
+    color:var(--accent);border-color:rgba(61,217,179,.2);
+    box-shadow:inset 3px 0 0 var(--accent);
+  }
+  .nav-item .ico{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+  .sidebar-foot{
+    margin-top:auto;padding:14px 10px 4px;
+    border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);line-height:1.7;
+  }
+
+  /* ===== MAIN ===== */
+  .main{margin-left:var(--sidebar-w);flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(6,9,15,.9);backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+    padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .topbar h1{font-size:17px;font-weight:700;letter-spacing:-.3px;}
+  .topbar .sub{font-size:11.5px;color:var(--text-secondary);margin-top:3px;letter-spacing:.1px;}
+  .topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .search-box,.sel-box{
+    padding:9px 14px;border-radius:10px;
+    border:1px solid var(--border-light);
+    background:rgba(255,255,255,.04);
+    color:var(--text);font-size:13px;outline:none;
+    transition:border-color .2s,background .2s;font-family:inherit;
+  }
+  .search-box:focus,.sel-box:focus{
+    border-color:var(--accent);background:rgba(61,217,179,.04);
+  }
+  .live-badge{
+    display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;
+    color:var(--accent);background:rgba(61,217,179,.08);
+    padding:7px 14px;border-radius:20px;border:1px solid rgba(61,217,179,.22);
+    letter-spacing:.5px;
+  }
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.8);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+  .content{padding:26px 28px 48px;display:flex;flex-direction:column;gap:28px;}
+  .panel{scroll-margin-top:90px;animation:fadeUp .4s ease both;}
+  .panel:nth-child(2){animation-delay:.06s;}
+  .panel:nth-child(3){animation-delay:.12s;}
+  .panel:nth-child(4){animation-delay:.18s;}
+  .panel:nth-child(5){animation-delay:.22s;}
+  .panel-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .panel-head h2{font-size:16px;font-weight:700;letter-spacing:-.3px;}
+  .panel-head .tag{
+    font-size:11px;color:var(--text-secondary);
+    background:rgba(255,255,255,.05);
+    padding:4px 11px;border-radius:20px;border:1px solid var(--border);
+  }
+
+  /* KPI cards */
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--gap);}
+  .kpi-card{
+    border-radius:var(--radius);padding:20px 22px;
+    position:relative;overflow:hidden;
+    transition:transform .2s,box-shadow .2s;
+    background:var(--bg-card);border:1px solid var(--border);
+  }
+  .kpi-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    border-radius:var(--radius) var(--radius) 0 0;
+  }
+  .kpi-card.c2::before{background:linear-gradient(90deg,var(--accent2),var(--accent3));}
+  .kpi-card.c3::before{background:linear-gradient(90deg,var(--gold),var(--warn));}
+  .kpi-card.c4::before{background:linear-gradient(90deg,var(--accent3),#f472b6);}
+  .kpi-card::after{
+    content:'';position:absolute;bottom:-20px;right:-20px;
+    width:90px;height:90px;border-radius:50%;
+    background:var(--accent);opacity:.05;
+  }
+  .kpi-card.c2::after{background:var(--accent2);}
+  .kpi-card.c3::after{background:var(--gold);}
+  .kpi-card.c4::after{background:var(--accent3);}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.3);}
+  .kpi-icon-wrap{
+    width:38px;height:38px;border-radius:11px;
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+    margin-bottom:14px;background:var(--glow-green);
+  }
+  .kpi-card.c2 .kpi-icon-wrap{background:var(--glow-blue);}
+  .kpi-card.c3 .kpi-icon-wrap{background:var(--glow-gold);}
+  .kpi-card.c4 .kpi-icon-wrap{background:var(--glow-purple);}
+  .kpi-label{font-size:11px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-weight:600;}
+  .kpi-value{font-size:26px;font-weight:800;letter-spacing:-.6px;line-height:1.1;}
+  .kpi-sub{font-size:12px;color:var(--text-secondary);margin-top:5px;font-weight:500;}
+
+  /* Cards */
+  .card{
+    background:var(--bg-card);border:1px solid var(--border);
+    border-radius:var(--radius);padding:22px 24px;
+    transition:border-color .2s;
+  }
+  .card:hover{border-color:var(--border-light);}
+  .card h3{font-size:14px;font-weight:700;margin-bottom:4px;letter-spacing:-.2px;}
+  .card .card-sub{font-size:12px;color:var(--text-secondary);margin-bottom:18px;line-height:1.6;}
+  .card canvas{max-height:320px;}
+  .grid-2{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--gap);}
+  .grid-1{display:grid;grid-template-columns:1fr;gap:var(--gap);}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);}
+
+  /* Weight sliders */
+  .weights{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .weight-ctl{
+    background:var(--bg-card2);border-radius:var(--radius-sm);
+    padding:16px 18px;border:1px solid var(--border);
+  }
+  .weight-ctl label{display:block;font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-weight:600;}
+  .weight-ctl label b{color:var(--accent);font-size:15px;font-weight:800;}
+  .weight-ctl input[type=range]{width:100%;accent-color:var(--accent);height:4px;}
+
+  /* Table */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:12px 14px;text-align:left;white-space:nowrap;}
+  thead th{
+    position:sticky;top:0;background:var(--bg-card2);
+    color:var(--text-secondary);font-size:11px;text-transform:uppercase;
+    letter-spacing:.6px;cursor:pointer;user-select:none;
+    border-bottom:1px solid var(--border);z-index:2;font-weight:700;
+    transition:color .15s;
+  }
+  thead th:hover{color:var(--text);}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;}
+  tbody tr:hover{background:rgba(255,255,255,.03);}
+  tbody tr:last-child{border-bottom:none;}
+  .bar{display:inline-block;height:7px;border-radius:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+  .bar-wrap{display:flex;align-items:center;gap:10px;min-width:150px;}
+  .rank-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:9px;
+    background:rgba(255,255,255,.06);font-weight:700;font-size:12px;
+  }
+  .rank-badge.top1{background:linear-gradient(135deg,#f6c343,#e0a92e);color:#3a2a00;}
+  .rank-badge.top3{background:rgba(61,217,179,.15);color:var(--accent);}
+  .rank-badge.top10{background:rgba(91,141,239,.12);color:var(--accent2);}
+
+  /* Predictions */
+  .pred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(450px,1fr));gap:18px;}
+  .pred-section-label{
+    grid-column:1/-1;
+    font-size:13px;font-weight:800;color:var(--text);
+    margin:10px 0 -4px;padding-top:14px;border-top:1px solid var(--border);
+    display:flex;align-items:center;gap:8px;letter-spacing:.2px;
+    cursor:pointer;user-select:none;
+  }
+  .pred-section-label:first-child{margin-top:0;padding-top:0;border-top:none;}
+
+  .pred-section-label .pred-section-count{font-weight:500;color:var(--text-secondary);font-size:11.5px;}
+  .pred-section-caret{display:inline-block;transition:transform .2s;font-size:11px;color:var(--text-secondary);}
+  .pred-section-label.collapsed .pred-section-caret{transform:rotate(-90deg);}
+  .pred-section-body{display:contents;}
+  .pred-section-body.hidden{display:none;}
+  .pred-group{
+    background:var(--bg-card2);border:1px solid var(--border);
+    border-radius:16px;padding:16px 18px;
+    transition:border-color .2s;
+  }
+  .pred-group:hover{border-color:var(--border-light);}
+  .pred-group-label{
+    font-size:11px;color:var(--accent);text-transform:uppercase;
+    letter-spacing:1px;margin:0 0 14px;font-weight:700;
+    display:flex;align-items:center;gap:7px;
+  }
+  .pred-group-label::before{
+    content:'';display:inline-block;width:18px;height:2px;
+    background:var(--accent);border-radius:1px;
+  }
+  .pred-match{
+    border-radius:12px;padding:12px 0;cursor:pointer;
+    transition:all .2s;
+  }
+  .pred-match + .pred-match{border-top:1px solid var(--border);margin-top:8px;padding-top:16px;}
+  .pred-teams{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:8px;margin-bottom:10px;font-size:13px;
+  }
+  .pred-teams .pt{font-weight:600;display:flex;align-items:center;gap:5px;min-width:0;}
+  .pred-teams .pt .rk{
+    color:var(--text-dim);font-weight:500;font-size:11px;
+    background:rgba(255,255,255,.06);padding:1px 6px;border-radius:5px;
+  }
+  .pred-teams .pt.away{justify-content:flex-end;text-align:right;}
+  .pred-teams .vs{
+    color:var(--text-dim);font-size:10px;font-weight:700;flex-shrink:0;
+    background:rgba(255,255,255,.05);padding:3px 8px;border-radius:5px;letter-spacing:.5px;
+  }
+  .pred-bar{
+    display:flex;height:28px;border-radius:8px;overflow:hidden;
+    font-size:11px;font-weight:700;gap:2px;
+  }
+  .pred-bar .home{
+    background:linear-gradient(90deg,#3dd9b3,#2dbf9b);
+    display:flex;align-items:center;justify-content:flex-start;
+    padding-left:9px;color:#04201a;border-radius:8px 0 0 8px;
+  }
+  .pred-bar .draw{
+    background:#212d3e;
+    display:flex;align-items:center;justify-content:center;color:#8b9bb4;
+  }
+  .pred-bar .away{
+    background:linear-gradient(90deg,#e07870,#d05a52);
+    display:flex;align-items:center;justify-content:flex-end;
+    padding-right:9px;color:#2a0806;border-radius:0 8px 8px 0;
+  }
+  .pred-explain{
+    display:none;margin-top:12px;padding:12px 16px;
+    background:rgba(0,0,0,.25);border-radius:10px;
+    font-size:12px;line-height:1.75;color:#c4cdd8;
+    border-left:3px solid var(--accent);
+  }
+  .pred-match.open .pred-explain{display:block;}
+  .pred-match.open .pred-teams .vs{color:var(--accent);background:rgba(61,217,179,.1);}
+  /* Tự động hiện chi tiết khi di chuột qua trận/biểu đồ (hover) — chỉ áp dụng cho con trỏ thật
+     (chuột); thiết bị cảm ứng không có hover nên vẫn dùng click để mở/ghim (.open). */
+  @media (hover:hover){
+    .pred-match:hover .pred-explain{display:block;}
+    .pred-match:hover .pred-teams .vs{color:var(--accent);background:rgba(61,217,179,.1);}
+  }
+
+  /* Tooltip */
+  .team-cell{position:relative;cursor:pointer;}
+  .team-cell .team-name{
+    border-bottom:1px dashed rgba(61,217,179,.5);
+    color:var(--accent);font-weight:600;
+    transition:color .15s;
+  }
+  .team-cell:hover .team-name{color:#7ee8ce;}
+  .tooltip-popup{
+    display:none;position:fixed;z-index:9999;
+    background:var(--bg-elevated);
+    border:1px solid var(--border-light);
+    border-radius:16px;padding:16px 18px;width:326px;
+    box-shadow:0 16px 50px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);
+    font-size:13px;line-height:1.65;pointer-events:none;
+    backdrop-filter:blur(10px);
+  }
+  .tooltip-popup.active{display:block;}
+  .tt-header{font-weight:700;font-size:15px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);letter-spacing:-.2px;}
+  .tt-coach{color:var(--accent);font-size:12px;margin-bottom:8px;font-weight:500;}
+  .tt-section{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
+    color:var(--text-dim);margin:10px 0 4px;font-weight:700;
+  }
+  .tt-stars{color:var(--gold);font-size:12.5px;margin-bottom:4px;line-height:1.8;}
+  .tt-club{color:#c4cdd8;font-size:12px;}
+  .tt-formation{
+    display:inline-block;background:rgba(255,255,255,.06);
+    border-radius:7px;padding:3px 10px;font-size:11px;
+    color:var(--text-secondary);margin-top:7px;border:1px solid var(--border);
+  }
+
+  .footer-note{
+    font-size:12px;color:var(--text-dim);line-height:1.8;
+    padding:18px 22px;background:var(--bg-card);
+    border:1px solid var(--border);border-radius:var(--radius);
+  }
+  .footer-note b{color:var(--text-secondary);}
+
+  /* Mobile */
+  .menu-toggle{display:none;}
+  @media (max-width:1080px){.grid-2{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} .weights{grid-template-columns:1fr;}}
+  @media (max-width:760px){
+    .sidebar{transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+    .sidebar.open{transform:translateX(0);}
+    .main{margin-left:0;}
+    .menu-toggle{
+      display:flex;align-items:center;justify-content:center;
+      width:38px;height:38px;border-radius:10px;
+      background:rgba(255,255,255,.06);border:1px solid var(--border-light);
+      color:var(--text);font-size:18px;cursor:pointer;
+    }
+    .content{padding:18px 16px 48px;} .topbar{padding:14px 16px;}
+    .pred-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">🏆</div>
+    <div class="brand-text">WC 2026<span>Dự đoán kèo chấp</span></div>
+  </div>
+  <div class="nav-label">Dự đoán</div>
+  <div class="nav-item active" data-target="predictions"><span class="ico">🔮</span> Dự đoán lượt 2</div>
+  <div class="sidebar-foot">
+    Cập nhật cuối:<br><b id="sidebarUpdate" style="color:var(--accent)"></b><br><br>
+    Nhắn "cập nhật" sau mỗi lượt trận để làm mới phong độ.
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <div>
+        <h1>FIFA World Cup 2026 — Dự đoán theo kèo chấp</h1>
+        <div class="sub">Xác suất suy ra từ kèo chấp bán nguyên (Asian handicap) bet365</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="live-badge"><span class="live-dot"></span> ĐANG DIỄN RA</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- PREDICTIONS -->
+    <section class="panel" id="predictions">
+      <div class="panel-head"><h2>🔮 Dự đoán xác suất — Lượt 2 vòng bảng</h2></div>
+      <div class="card">
+        <div class="card-sub">Xác suất suy ra trực tiếp từ kèo chấp bán nguyên (Asian handicap) trên bet365 bằng phương pháp khử kèo (de-vig) + trừ lùi (telescoping). Bấm vào mỗi trận để xem chi tiết.</div>
+        <div class="pred-grid" id="predictionList"></div>
+      </div>
+      <div class="footer-note" style="margin-top:20px;" id="footerNote"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const RAW = [
+["A","Mexico",1687,40,195,27.8],["A","Nam Phi",1428,10,46,27.1],["A","Hàn Quốc",1591,45,142,27.6],["A","CH Séc",1505,15,190,26.9],
+["B","Canada",1559,5,203,26.4],["B","Bosnia & Herzegovina",1387,5,149,26.4],["B","Qatar",1450,5,20,27.3],["B","Thụy Sỹ",1650,25,334,27.9],
+["C","Brazil",1765,100,912,29.2],["C","Morocco",1755,55,488,24.7],["C","Haiti",1293,5,10,26.8],["C","Scotland",1503,15,200,28.1],
+["D","Mỹ",1671,35,410,26.4],["D","Paraguay",1505,25,157,27.5],["D","Australia",1579,20,110,27.9],["D","Thổ Nhĩ Kỳ",1605,40,494,27.2],
+["E","Đức",1735,90,998,26.7],["E","Curacao",1294,5,28,27.0],["E","Bờ Biển Ngà",1540,15,531,25.1],["E","Ecuador",1598,20,376,23.8],
+["F","Hà Lan",1753,65,837,27.4],["F","Nhật Bản",1661,35,260,27.1],["F","Thụy Điển",1509,45,230,27.6],["F","Tunisia",1476,10,90,27.8],
+["G","Bỉ",1742,50,543,28.8],["G","Ai Cập",1562,10,133,27.3],["G","Iran",1619,15,35,30.5],["G","New Zealand",1275,5,35,27.6],
+["H","Tây Ban Nha",1874,65,1260,25.6],["H","Cape Verde",1371,5,25,29.2],["H","Saudi Arabia",1423,15,75,26.5],["H","Uruguay",1673,70,406,28.4],
+["I","Pháp",1870,80,1530,26.5],["I","Senegal",1684,35,473,27.2],["I","Iraq",1446,5,23,27.5],["I","Na Uy",1557,15,601,26.8],
+["J","Argentina",1877,90,818,27.0],["J","Algeria",1571,15,258,27.6],["J","Áo",1597,30,220,27.3],["J","Jordan",1387,5,20,26.9],
+["K","Bồ Đào Nha",1767,50,1020,28.6],["K","CHDC Congo",1474,5,40,27.1],["K","Uzbekistan",1458,5,76,26.3],["K","Colombia",1698,35,330,29.5],
+["L","Anh",1828,65,1310,27.8],["L","Croatia",1714,60,386,29.1],["L","Ghana",1346,30,231,26.7],["L","Panama",1539,5,35,30.0]
+];
+
+const FORM = {
+  "Mexico":[2,6,3],"Nam Phi":[2,1,-2],
+  "Hàn Quốc":[2,3,0],"CH Séc":[2,1,-1],
+  "Canada":[2,4,6],"Bosnia & Herzegovina":[2,1,-3],
+  "Mỹ":[1,3,3],"Paraguay":[1,0,-3],
+  "Qatar":[2,1,-6],"Thụy Sỹ":[2,4,3],
+  "Brazil":[1,1,0],"Morocco":[1,1,0],
+  "Scotland":[1,3,1],"Haiti":[1,0,-1],
+  "Australia":[1,3,2],"Thổ Nhĩ Kỳ":[1,0,-2],
+  "Đức":[1,3,6],"Curacao":[1,0,-6],
+  "Bờ Biển Ngà":[1,3,1],"Ecuador":[1,0,-1],
+  "Hà Lan":[1,1,0],"Nhật Bản":[1,1,0],
+  "Thụy Điển":[1,3,4],"Tunisia":[1,0,-4],
+  "Tây Ban Nha":[1,1,0],"Cape Verde":[1,1,0],
+  "Saudi Arabia":[1,1,0],"Uruguay":[1,1,0],
+  "Bỉ":[2,2,0],"Ai Cập":[2,4,2],
+  "Iran":[1,1,0],"New Zealand":[2,1,-2],
+  "Pháp":[2,6,5],"Senegal":[2,0,-3],
+  "Na Uy":[2,6,4],"Iraq":[2,0,-6],
+  "Argentina":[2,6,5],"Algeria":[1,0,-3],
+  "Áo":[2,3,0],"Jordan":[1,0,-2],
+  "Bồ Đào Nha":[1,1,0],"CHDC Congo":[1,1,0],
+  "Anh":[1,3,2],"Croatia":[1,0,-2],
+  "Ghana":[1,3,1],"Panama":[1,0,-1],
+  "Colombia":[1,3,2],"Uzbekistan":[1,0,-2],
+};
+
+const RESULTS = {
+  "Mexico":[["Nam Phi",2,0,"W"],["Hàn Quốc",1,0,"W"]],"Nam Phi":[["Mexico",0,2,"L"],["CH Séc",1,1,"D"]],
+  "Hàn Quốc":[["CH Séc",2,1,"W"],["Mexico",0,1,"L"]],"CH Séc":[["Hàn Quốc",1,2,"L"],["Nam Phi",1,1,"D"]],
+  "Canada":[["Bosnia & Herzegovina",1,1,"D"],["Qatar",6,0,"W"]],"Bosnia & Herzegovina":[["Canada",1,1,"D"],["Thụy Sỹ",1,4,"L"]],
+  "Mỹ":[["Paraguay",4,1,"W"],["Australia",2,0,"W"]],"Paraguay":[["Mỹ",1,4,"L"],["Thổ Nhĩ Kỳ",1,0,"W"]],
+  "Qatar":[["Thụy Sỹ",1,1,"D"],["Canada",0,6,"L"]],"Thụy Sỹ":[["Qatar",1,1,"D"],["Bosnia & Herzegovina",4,1,"W"]],
+  "Brazil":[["Morocco",1,1,"D"],["Haiti",3,0,"W"]],"Morocco":[["Brazil",1,1,"D"],["Scotland",1,0,"W"]],
+  "Scotland":[["Haiti",1,0,"W"],["Morocco",0,1,"L"]],"Haiti":[["Scotland",0,1,"L"],["Brazil",0,3,"L"]],
+  "Australia":[["Thổ Nhĩ Kỳ",2,0,"W"],["Mỹ",0,2,"L"]],"Thổ Nhĩ Kỳ":[["Australia",0,2,"L"],["Paraguay",0,1,"L"]],
+  "Đức":[["Curacao",7,1,"W"],["Bờ Biển Ngà",2,1,"W"]],"Curacao":[["Đức",1,7,"L"],["Ecuador",0,0,"D"]],
+  "Bờ Biển Ngà":[["Ecuador",1,0,"W"],["Đức",1,2,"L"]],"Ecuador":[["Bờ Biển Ngà",0,1,"L"],["Curacao",0,0,"D"]],
+  "Hà Lan":[["Nhật Bản",2,2,"D"],["Thụy Điển",5,1,"W"]],"Nhật Bản":[["Hà Lan",2,2,"D"],["Tunisia",4,0,"W"]],
+  "Thụy Điển":[["Tunisia",5,1,"W"],["Hà Lan",1,5,"L"]],"Tunisia":[["Thụy Điển",1,5,"L"],["Nhật Bản",0,4,"L"]],
+  "Tây Ban Nha":[["Cape Verde",0,0,"D"],["Saudi Arabia",4,0,"W"]],"Cape Verde":[["Tây Ban Nha",0,0,"D"],["Uruguay",2,2,"D"]],
+  "Uruguay":[["Saudi Arabia",1,1,"D"],["Cape Verde",2,2,"D"]],"Saudi Arabia":[["Uruguay",1,1,"D"],["Tây Ban Nha",0,4,"L"]],
+  "Iran":[["New Zealand",2,2,"D"],["Bỉ",0,0,"D"]],"New Zealand":[["Iran",2,2,"D"],["Ai Cập",1,3,"L"]],
+  "Bỉ":[["Ai Cập",1,1,"D"],["Iran",0,0,"D"]],"Ai Cập":[["Bỉ",1,1,"D"],["New Zealand",3,1,"W"]],
+  "Pháp":[["Senegal",3,1,"W"],["Iraq",3,0,"W"]],"Senegal":[["Pháp",1,3,"L"],["Na Uy",2,3,"L"]],
+  "Na Uy":[["Iraq",4,1,"W"],["Senegal",3,2,"W"]],"Iraq":[["Na Uy",1,4,"L"],["Pháp",0,3,"L"]],
+  "Argentina":[["Algeria",3,0,"W"],["Áo",2,0,"W"]],"Algeria":[["Argentina",0,3,"L"]],
+  "Áo":[["Jordan",3,1,"W"],["Argentina",0,2,"L"]],"Jordan":[["Áo",1,3,"L"]],
+  "Bồ Đào Nha":[["CHDC Congo",1,1,"D"]],"CHDC Congo":[["Bồ Đào Nha",1,1,"D"]],
+  "Anh":[["Croatia",4,2,"W"]],"Croatia":[["Anh",2,4,"L"]],
+  "Ghana":[["Panama",1,0,"W"]],"Panama":[["Ghana",0,1,"L"]],
+  "Colombia":[["Uzbekistan",3,1,"W"]],"Uzbekistan":[["Colombia",1,3,"L"]],
+};
+
+const COACH = {
+  "Mexico":["Javier Aguirre",60],"Nam Phi":["Hugo Broos",40],"Hàn Quốc":["Hong Myung-bo",45],"CH Séc":["Miroslav Koubek",30],
+  "Canada":["Jesse Marsch",55],"Bosnia & Herzegovina":["Sergej Barbarez",35],"Qatar":["Julen Lopetegui",65],"Thụy Sỹ":["Murat Yakin",45],
+  "Brazil":["Carlo Ancelotti",100],"Morocco":["Mohamed Ouahbi",35],"Haiti":["Sebastien Migne",25],"Scotland":["Steve Clarke",45],
+  "Mỹ":["Mauricio Pochettino",75],"Paraguay":["Gustavo Alfaro",40],"Australia":["Tony Popovic",35],"Thổ Nhĩ Kỳ":["Vincenzo Montella",55],
+  "Đức":["Julian Nagelsmann",70],"Curacao":["Dick Advocaat",55],"Bờ Biển Ngà":["Emerse Fae",40],"Ecuador":["Sebastian Beccacece",35],
+  "Hà Lan":["Ronald Koeman",75],"Nhật Bản":["Hajime Moriyasu",50],"Thụy Điển":["Graham Potter",55],"Tunisia":["Sabri Lamouchi",35],
+  "Bỉ":["Rudi Garcia",55],"Ai Cập":["Hossam Hassan",45],"Iran":["Amir Ghalenoei",35],"New Zealand":["Darren Bazeley",25],
+  "Tây Ban Nha":["Luis de la Fuente",70],"Cape Verde":["Pedro 'Bubista' Brito",30],"Saudi Arabia":["Herve Renard",60],"Uruguay":["Marcelo Bielsa",85],
+  "Pháp":["Didier Deschamps",90],"Senegal":["Pape Thiaw",40],"Iraq":["Graham Arnold",30],"Na Uy":["Stale Solbakken",45],
+  "Argentina":["Lionel Scaloni",90],"Algeria":["Vladimir Petkovic",45],"Áo":["Ralf Rangnick",75],"Jordan":["Hussein Ammouta",30],
+  "Bồ Đào Nha":["Roberto Martinez",65],"CHDC Congo":["Sebastien Desabre",30],"Uzbekistan":["Srecko Katanec",40],"Colombia":["Nestor Lorenzo",45],
+  "Anh":["Thomas Tuchel",85],"Croatia":["Zlatko Dalic",65],"Ghana":["Carlos Queiroz",55],"Panama":["Thomas Christiansen",35],
+};
+
+// ── Dữ liệu đội tuyển (không còn dùng giá trị đội hình/phong độ/HLV để tính xác suất —
+//    3 tiêu chí này giờ chỉ hiển thị tham khảo trong thẻ chi tiết từng đội) ──
+let DATA=RAW.map(r=>{
+  const f=FORM[r[1]]||[0,0,0];
+  const c=COACH[r[1]]||["?",40];
+  return {group:r[0],team:r[1],fifa:r[2],hist:r[3],val:r[4],
+          played:f[0],pts:f[1],gd:f[2],
+          coachName:c[0],coach:c[1],avgAge:r[5]};
+});
+// Hạng tham khảo dựa trên điểm FIFA ranking (khách quan, không dùng để tính xác suất trận đấu)
+[...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
+
+var _lu=document.getElementById('sidebarUpdate');
+if(_lu) _lu.textContent='23/06/2026 — lượt 2 đang diễn ra (19/24 trận)';
+
+function fmt(n){return n.toFixed(1);}
+
+function refresh(){
+  renderPredictions();
+}
+
+const FIXTURES=[
+  ["A","Mexico","Hàn Quốc"],["A","CH Séc","Nam Phi"],
+  ["B","Thụy Sỹ","Bosnia & Herzegovina"],["B","Canada","Qatar"],
+  ["C","Brazil","Haiti"],["C","Scotland","Morocco"],
+  ["D","Mỹ","Australia"],["D","Thổ Nhĩ Kỳ","Paraguay"],
+  ["E","Đức","Bờ Biển Ngà"],["E","Ecuador","Curacao"],
+  ["F","Hà Lan","Thụy Điển"],["F","Tunisia","Nhật Bản"],
+  ["G","Bỉ","Iran"],["G","New Zealand","Ai Cập"],
+  ["H","Tây Ban Nha","Saudi Arabia"],["H","Uruguay","Cape Verde"],
+  ["I","Pháp","Iraq"],["I","Na Uy","Senegal"],
+  ["J","Argentina","Áo"],["J","Jordan","Algeria"],
+  ["K","Bồ Đào Nha","Uzbekistan"],["K","Colombia","CHDC Congo"],
+  ["L","Anh","Ghana"],["L","Panama","Croatia"],
+];
+
+// ── Kết quả lượt 2 đã có (key: "home|away", value: [gf,ga]) ──
+const PLAYED_R2 = {
+  "CH Séc|Nam Phi":[1,1],
+  "Thụy Sỹ|Bosnia & Herzegovina":[4,1],
+  "Canada|Qatar":[6,0],
+  "Mexico|Hàn Quốc":[1,0],
+  "Mỹ|Australia":[2,0],
+  "Thổ Nhĩ Kỳ|Paraguay":[0,1],
+  "Brazil|Haiti":[3,0],
+  "Scotland|Morocco":[0,1],
+  "Đức|Bờ Biển Ngà":[2,1],
+  "Hà Lan|Thụy Điển":[5,1],
+  "Ecuador|Curacao":[0,0],
+  "Tunisia|Nhật Bản":[0,4],
+  "Tây Ban Nha|Saudi Arabia":[4,0],
+  "Bỉ|Iran":[0,0],
+  "Uruguay|Cape Verde":[2,2],
+  "New Zealand|Ai Cập":[1,3],
+  "Argentina|Áo":[2,0],
+  "Pháp|Iraq":[3,0],
+  "Na Uy|Senegal":[3,2],
+};
+
+// ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
+// Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
+const HANDICAP_GIBOT = {
+  "Jordan|Algeria": 1.0,
+  "Bồ Đào Nha|Uzbekistan": -2.0,
+  "Anh|Ghana": -2.0,
+  "Panama|Croatia": 1.5,
+  "Colombia|CHDC Congo": -1.0,
+};
+
+// ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
+// fav: 'A' nếu tA là đội được chấp (đội mạnh hơn), 'B' nếu tB là đội được chấp.
+//      KHÔNG BẮT BUỘC — nếu bỏ trống, hệ thống tự suy ra từ dấu của HANDICAP_GIBOT (kèo gibot.top):
+//      âm ⇒ tA được chấp, dương ⇒ tB được chấp. Chỉ cần ghi rõ fav khi trận đó chưa có trong HANDICAP_GIBOT.
+// ladder: các mốc kèo phụ BÁN NGUYÊN (line=-0.5,-1.5,-2.5,...) — KHÔNG đưa mốc nguyên (-1,-2..)
+// hay mốc phân nửa/quarter (kiểu bet365 ghi "-4.0,-4.5") vào đây, vì 2 loại đó không tách được
+// thắng/thua rõ ràng nên không dùng được cho công thức khử kèo + trừ lùi.
+// Thứ tự trong mảng không quan trọng (hệ thống tự đọc theo giá trị line), nhưng BẮT BUỘC phải có
+// mốc -0.5 thì mới tách được phần "không thắng cách biệt" — thiếu mốc -0.5 sẽ bị coi là chưa đủ dữ liệu.
+// Mỗi mốc gồm tỉ lệ ăn (decimal odds) của đội được chấp (oddsFav) và đội nhận chấp (oddsUnd).
+//   "Tên A|Tên B": { ladder:[
+//     {line:-0.5, oddsFav:1.60, oddsUnd:2.30},
+//     {line:-1.5, oddsFav:2.60, oddsUnd:1.48},
+//   ]}
+const BET365_ODDS = {
+  "Jordan|Algeria": { fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
+    {line:-1.5, oddsFav:2.425, oddsUnd:1.525},
+    {line:-2.5, oddsFav:4.650, oddsUnd:1.180},
+  ]},
+  "Bồ Đào Nha|Uzbekistan": { fav:'A', ladder:[
+    {line:-1.5, oddsFav:1.525, oddsUnd:2.425},
+    {line:-2.5, oddsFav:2.350, oddsUnd:1.575},
+    {line:-3.5, oddsFav:4.100, oddsUnd:1.225},
+  ]},
+  "Anh|Ghana": { fav:'A', ladder:[
+    {line:-1.5, oddsFav:1.625, oddsUnd:2.250},
+    {line:-2.5, oddsFav:2.600, oddsUnd:1.475},
+    {line:-3.5, oddsFav:4.650, oddsUnd:1.180},
+  ]},
+  "Panama|Croatia": { fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.475, oddsUnd:2.600},
+    {line:-1.5, oddsFav:2.300, oddsUnd:1.600},
+    {line:-2.5, oddsFav:4.250, oddsUnd:1.210},
+  ]},
+  "Colombia|CHDC Congo": { fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.525, oddsUnd:2.425},
+    {line:-1.5, oddsFav:2.600, oddsUnd:1.475},
+    {line:-2.5, oddsFav:5.500, oddsUnd:1.150},
+  ]},
+};
+
+// Suy ra đội được chấp ('A'/'B') cho 1 trận: ưu tiên fav khai báo thủ công trong BET365_ODDS,
+// nếu không có thì lấy theo dấu của kèo gibot.top (HANDICAP_GIBOT) — âm ⇒ A, dương ⇒ B.
+function resolveFav(playedKey,entry){
+  if(entry.fav==='A'||entry.fav==='B') return entry.fav;
+  if(Object.prototype.hasOwnProperty.call(HANDICAP_GIBOT,playedKey)){
+    const h=HANDICAP_GIBOT[playedKey];
+    if(h<0) return 'A';
+    if(h>0) return 'B';
+  }
+  return null; // không xác định được đội nào được chấp (kèo gibot = 0 hoặc chưa có) → cần khai báo fav thủ công
+}
+
+// ── Mô hình dự đoán: suy ra xác suất trực tiếp từ kèo chấp bán nguyên (Asian handicap) bet365 ──
+// Quy trình:
+//  1) Khử kèo (de-vig) ở từng mốc kèo phụ: P_true = (1/oddsFav) / (1/oddsFav + 1/oddsUnd)
+//     → xác suất thực mà đội được chấp thắng cách biệt từ |line| trở lên.
+//  2) Trừ lùi (telescoping) giữa 2 mốc liên tiếp để tách xác suất cho TỪNG mức cách biệt:
+//       P(cách biệt đúng k) = P_true(mốc k) − P_true(mốc k+1)
+//     (dùng hiệu của 2 mốc liền kề — không trừ dồn tất cả các mốc trước, vì trừ dồn sẽ
+//      khiến tổng xác suất không còn bằng 1)
+//  3) Mốc xa nhất trong ladder: phần xác suất còn lại = "cách biệt từ đó trở lên".
+const DIST_RANGE=6; // phạm vi hiệu số hiển thị: -6..+6
+
+function impliedProbFav(oddsFav,oddsUnd){
+  const pRawFav=1/oddsFav, pRawUnd=1/oddsUnd;
+  return pRawFav/(pRawFav+pRawUnd);
+}
+
+// Đọc các mốc bán nguyên "sạch" hợp lệ từ ladder (line=-0.5,-1.5,-2.5,...) thành map k→P_true(margin≥k).
+// Bỏ qua mốc nguyên (-1,-2..) và mốc phân nửa/quarter (kiểu "-4.0,-4.5") vì không dùng được cho
+// công thức khử kèo + trừ lùi. Đọc theo GIÁ TRỊ line, không theo thứ tự trong mảng.
+function rungsByK(ladder){
+  const byK={};
+  ladder.forEach(l=>{
+    const k=Math.abs(l.line)+0.5;
+    if(Math.abs(k-Math.round(k))<1e-6 && k>=1){
+      byK[Math.round(k)]=impliedProbFav(l.oddsFav,l.oddsUnd);
+    }
+  });
+  return byK;
+}
+// Mốc nhỏ nhất (gần 0 nhất) có dữ liệu trong ladder — dùng để biết "không thắng cách biệt" thực ra
+// là "cách biệt nhỏ hơn bao nhiêu" khi ladder không có mốc -0.5 (vd: đội quá mạnh, bet365 không mở
+// kèo phụ nhỏ). Trả về null nếu ladder không có mốc bán nguyên hợp lệ nào.
+function minRungK(ladder){
+  const ks=Object.keys(rungsByK(ladder||[])).map(Number);
+  return ks.length?Math.min(...ks):null;
+}
+
+// Tỉ lệ giảm xác suất giữa 2 mốc kA<kB (đều đã có trong byK) — dùng làm "tốc độ giảm mỗi bàn cách biệt
+// thêm" để chia nhỏ các vùng KHÔNG có số liệu thật (xem geometricSpread). Lấy từ chính 2 mốc kèo thật
+// gần nhau nhất của trận đó; nếu thiếu dữ liệu (chỉ có 1 mốc) thì dùng FALLBACK_DECAY.
+const FALLBACK_DECAY=0.5;
+function decayRatio(byK,kA,kB,fallback){
+  const a=byK[kA],b=byK[kB];
+  if(a==null||b==null||a<=0) return fallback;
+  const r=b/a;
+  if(!isFinite(r)||r<=0||r>=1) return fallback;
+  return r;
+}
+// Chia nhỏ một tổng xác suất "total" (đã biết chắc từ kèo, không đổi) thành nTerms phần giảm dần
+// theo tỉ lệ hình học (giống đuôi phân phối Poisson) — phần 0 lớn nhất, phần sau nhỏ dần theo ratio.
+// Tổng các phần luôn = total (chỉ chia lại cách phân bổ NỘI BỘ, không đổi số liệu đã verify ở mức nhóm).
+function geometricSpread(total,ratio,nTerms){
+  if(nTerms<=0||total<=0) return [];
+  const r=(ratio>0&&ratio<1)?ratio:FALLBACK_DECAY;
+  const w=[]; for(let j=0;j<nTerms;j++) w.push(Math.pow(r,j));
+  const sw=w.reduce((a,b)=>a+b,0);
+  return w.map(x=>total*x/sw);
+}
+
+// ladder: [{line:-0.5,oddsFav,oddsUnd},{line:-1.5,...},...] — thứ tự trong mảng không quan trọng
+// fav: 'A' hoặc 'B' — đội đang được chấp (đội mạnh hơn) trong ladder này
+// Trả về mảng buckets độ dài 2*DIST_RANGE+1 (index = hiệu số (B−A) + DIST_RANGE), hoặc null nếu chưa có kèo
+//
+// Mô hình lai (hybrid): các mốc CÓ kèo thật (trừ lùi/telescoping) giữ đúng 100% như cũ, không đổi.
+// Hai vùng KHÔNG có số liệu thật — (a) "không thắng cách biệt" (hoà + đội dưới thắng bất kỳ mức nào,
+// hiện gộp ở 1 điểm) và (b) đuôi xa "kMax bàn trở lên" — vẫn giữ ĐÚNG tổng % suy ra từ kèo, nhưng được
+// chia nhỏ ra nhiều điểm theo hình giảm dần kiểu Poisson (geometricSpread) để khỏi dồn cục vào 1 điểm.
+// Tốc độ giảm dùng cho mỗi vùng lấy từ chính 2 mốc kèo thật gần vùng đó nhất của trận này.
+function marginDistFromLadder(ladder,fav){
+  if(!ladder||!ladder.length) return null;
+  const R=DIST_RANGE;
+  const byK=rungsByK(ladder);
+  const ks=Object.keys(byK).map(Number);
+  if(!ks.length) return null; // không có mốc bán nguyên hợp lệ nào ⇒ chưa đủ dữ liệu
+  const kMinReal=Math.min(...ks);
+  const buckets=new Array(R*2+1).fill(0);
+  const sign=fav==='A'?-1:1; // A thắng cách biệt k ⇒ (B−A)=−k ; B thắng cách biệt k ⇒ (B−A)=+k
+
+  // 0b) Nếu kMinReal>1 (bet365 không có/không thấy mốc nhỏ, vd chỉ từ -2.5 trở lên): NỘI SUY
+  // (không ngoại suy) byK cho margin 1..kMinReal-1, neo vào 2 điểm CHẮC CHẮN đúng: byK[0]=1 (luôn
+  // đúng — P(margin≥0)=1 với mọi trận) và byK[kMinReal] (số thật từ kèo). Dùng nội suy hình học
+  // (geometric) byK[k]=byK[kMinReal]^(k/kMinReal) — đường cong luôn nằm gọn trong [byK[kMinReal],1],
+  // không thể vọt quá biên. (Cách ngoại suy khác — chia ngược tỉ lệ giảm cục bộ nhiều lần — bị
+  // khuếch đại dồn/compounding khi tỉ lệ đó nhỏ, từng cho kết quả vô lý gần 100%.)
+  const effByK={...byK};
+  if(kMinReal>1){
+    const base=byK[kMinReal];
+    for(let kk=kMinReal-1;kk>=1;kk--){
+      effByK[kk]=Math.pow(base,kk/kMinReal);
+    }
+  }
+  const kMin=1; // sau nội suy luôn có giá trị (thật hoặc nội suy) từ margin 1
+
+  // 1) Trừ lùi liên tiếp từ margin 1 tới mốc xa nhất có dữ liệu thật (các mốc <kMinReal dùng
+  // giá trị ngoại suy ở bước 0b, các mốc ≥kMinReal là số thật 100%, không đổi).
+  let k=kMin;
+  while((k+1) in effByK){
+    const pExact=Math.max(0,effByK[k]-effByK[k+1]);
+    const idx=R+sign*k;
+    if(idx>=0&&idx<buckets.length) buckets[idx]+=pExact;
+    k++;
+  }
+  const kMax=k; // mốc liên tiếp xa nhất có dữ liệu thật
+
+  // 2) Đuôi xa "kMax bàn trở lên" — tổng = byK[kMax] (số thật từ kèo), chia nhỏ theo tốc độ giảm
+  // suy từ 2 mốc xa nhất của chính trận này (kMax-1 → kMax).
+  const tailTotal=effByK[kMax];
+  const tailN=Math.max(1,R-kMax+1);
+  const rTail=decayRatio(effByK,kMax-1,kMax,FALLBACK_DECAY);
+  geometricSpread(tailTotal,rTail,tailN).forEach((v,j)=>{
+    const m=kMax+j; // m luôn ≤ R do tailN=R-kMax+1
+    const idx=R+sign*m;
+    if(idx>=0&&idx<buckets.length) buckets[idx]+=v;
+  });
+
+  // 3) Cục "không thắng cách biệt" thật (hoà + đội dưới thắng bất kỳ mức nào) — tổng = 1-effByK[1],
+  // chia nhỏ thành hoà (j=0) + đội dưới thắng cách biệt 1,2,3...bàn, theo tốc độ giảm suy từ 2 mốc
+  // gần biên nhất sau nội suy (margin 1→2 trong effByK — phản ánh đúng "vùng gần ngưỡng" nhất).
+  const nonWinTotal=1-effByK[1];
+  const nonWinN=R+1; // j=0 (tâm) .. j=R (biên phía đội dưới)
+  const rNonWin=decayRatio(effByK,1,(2 in effByK)?2:1,FALLBACK_DECAY);
+  geometricSpread(nonWinTotal,rNonWin,nonWinN).forEach((v,j)=>{
+    const idx=R-sign*j; // j=0 ở tâm, j tăng dần lệch sang phía đội dưới (đối diện sign)
+    if(idx>=0&&idx<buckets.length) buckets[idx]+=v;
+  });
+  return buckets;
+}
+// Tổng xác suất đội được chấp (fav) thắng cách biệt (mọi mức >0), dùng cho hiển thị tóm tắt —
+// không dựa vào 1 ô buckets[R] cụ thể nữa vì giờ cục trung tâm đã được chia nhỏ ở bước (3) trên.
+function favWinTotal(buckets,sign){
+  const R=(buckets.length-1)/2;
+  let s=0;
+  buckets.forEach((p,i)=>{ if(sign*(i-R)>0) s+=p; });
+  return s;
+}
+function smoothPath(pts){
+  if(pts.length<3) return `M${pts[0][0]},${pts[0][1]} L${pts[1][0]},${pts[1][1]}`;
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+    let c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6;
+    let c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
+    // Kẹp control point trong khoảng [min,max] của 2 điểm đầu mút đoạn này, tránh spline
+    // Catmull-Rom "vọt lố" (overshoot) tạo ra đường cong lụp xuống dưới mốc 0 (trông như xác suất âm)
+    // khi có một điểm nhô cao sát các điểm gần 0 (đúng tình huống của phân phối kèo chấp, rất "gai").
+    const yLo=Math.min(p1[1],p2[1]),yHi=Math.max(p1[1],p2[1]);
+    c1y=Math.min(Math.max(c1y,yLo),yHi);
+    c2y=Math.min(Math.max(c2y,yLo),yHi);
+    d+=` C${c1x},${c1y} ${c2x},${c2y} ${p2[0]},${p2[1]}`;
+  }
+  return d;
+}
+function distCurveSVG(tA,tB,buckets,handicap,uid){
+  const R=DIST_RANGE,n=buckets.length-1;
+  const maxP=Math.max(...buckets)||1;
+  const W=420,H=124,mL=22,mR=14,mT=26,mB=20;
+  const plotW=W-mL-mR,plotH=H-mT-mB;
+  const pts=buckets.map((p,i)=>[mL+i*(plotW/n), mT+plotH-(p/maxP)*plotH*0.78]);
+  const path=smoothPath(pts);
+  const areaPath=`${path} L${pts[n][0]},${mT+plotH} L${pts[0][0]},${mT+plotH} Z`;
+  const peakIdx=buckets.indexOf(Math.max(...buckets));
+  const gid='dg'+(uid||0)+peakIdx;
+  let ticks='';
+  for(let t=-R;t<=R;t++){
+    const i=t+R,x=mL+i*(plotW/n);
+    ticks+=`<text x="${x}" y="${H-5}" font-size="8.5" fill="#5a6b85" text-anchor="middle">${t}</text><line x1="${x}" y1="${mT}" x2="${x}" y2="${mT+plotH}" stroke="${t===0?'rgba(250,204,21,.3)':'rgba(255,255,255,.05)'}" stroke-width="${t===0?1.2:1}" stroke-dasharray="${t===0?'0':'2,3'}"/>`;
+  }
+  // ── Ghi % trực tiếp lên từng điểm có xác suất đáng kể (ngưỡng 5% — giờ mọi điểm đều có giá trị
+  // do mô hình lai Poisson chia nhỏ rồi, nên cần ngưỡng cao hơn để khỏi rối mắt) ──
+  let labels='';
+  buckets.forEach((p,i)=>{
+    if(p>0.05){
+      labels+=`<text x="${pts[i][0]}" y="${Math.max(10,pts[i][1]-7)}" font-size="8" fill="#e6ecf7" text-anchor="middle" font-weight="600">${(p*100).toFixed(1)}%</text>`;
+    }
+  });
+  let hcpLine='';
+  if(handicap!==null && handicap!==undefined && !isNaN(handicap)){
+    let hv=handicap; if(hv<-R) hv=-R; if(hv>R) hv=R;
+    const xh=mL+(hv+R)*(plotW/n);
+    hcpLine=`<line x1="${xh}" y1="${mT-3}" x2="${xh}" y2="${mT+plotH}" stroke="#5b8def" stroke-width="1.8" stroke-dasharray="4,3"/><text x="${xh}" y="${mT-8}" font-size="9.5" fill="#5b8def" text-anchor="middle" font-weight="700">Kèo ${handicap}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px;display:block;">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3dd9b3" stop-opacity=".5"/>
+      <stop offset="50%" stop-color="#facc15" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#e07870" stop-opacity=".5"/>
+    </linearGradient></defs>
+    <text x="${mL-2}" y="${mT-11}" font-size="9" fill="#5a6b85">▲ Xác suất</text>
+    <text x="${W-mR}" y="${H-5}" font-size="9" fill="#5a6b85" text-anchor="end">Chấp (B−A) →</text>
+    <text x="${mL}" y="13" font-size="10" font-weight="700" fill="#3dd9b3">◀ ${tA}</text>
+    <text x="${W-mR}" y="13" font-size="10" font-weight="700" fill="#e07870" text-anchor="end">${tB} ▶</text>
+    ${ticks}
+    <line x1="${mL}" y1="${mT+plotH}" x2="${W-mR}" y2="${mT+plotH}" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
+    <path d="${areaPath}" fill="url(#${gid})"/>
+    <path d="${path}" fill="none" stroke="#eef2f8" stroke-width="1.6" stroke-linejoin="round"/>
+    ${hcpLine}
+    <circle cx="${pts[peakIdx][0]}" cy="${pts[peakIdx][1]}" r="3.2" fill="#fff"/>
+    ${labels}
+  </svg>`;
+}
+
+// ── Tách xác suất theo kèo chấp: lớn hơn / bằng / nhỏ hơn kèo (chênh lệch tỉ số luôn là số nguyên) ──
+const _predBuckets={};
+function handicapSplit(buckets,h){
+  const R=(buckets.length-1)/2;
+  let pGt=0,pEq=0,pLt=0;
+  buckets.forEach((p,i)=>{
+    const v=i-R;
+    if(v>h) pGt+=p; else if(v===h) pEq+=p; else pLt+=p;
+  });
+  return {gt:pGt*100,eq:pEq*100,lt:pLt*100};
+}
+function updateHandicap(idx,tA,tB){
+  const inp=document.getElementById('hcp-'+idx);
+  if(!inp) return;
+  let h=parseFloat(inp.value);
+  if(isNaN(h)) h=0;
+  const buckets=_predBuckets[idx];
+  if(!buckets) return;
+  const r=handicapSplit(buckets,h);
+  const elGt=document.getElementById('hcpGt-'+idx),elEq=document.getElementById('hcpEq-'+idx),elLt=document.getElementById('hcpLt-'+idx);
+  if(elGt) elGt.textContent=r.gt.toFixed(1)+'%';
+  if(elEq) elEq.textContent=r.eq.toFixed(1)+'%';
+  if(elLt) elLt.textContent=r.lt.toFixed(1)+'%';
+  const svgWrap=document.getElementById('distSvg-'+idx);
+  if(svgWrap) svgWrap.innerHTML=distCurveSVG(tA,tB,buckets,h,idx);
+}
+
+function teamInlineCard(team,d){
+  const s=SQUAD[team];const c=COACH[team]||['?',0];
+  const news=typeof PREMATCH_NEWS!=='undefined'?PREMATCH_NEWS[team]||[]:[];
+  const f5=FORM5[team]||[];
+  const wcRes=(RESULTS[team])||[];
+  const wcHtml=wcRes.map(r=>{
+    const [opp,gf,ga,res]=r;
+    const col=res==='W'?'#3dd9b3':res==='D'?'#facc15':'#f87171';
+    const icon=res==='W'?'W':res==='D'?'D':'L';
+    return `<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);border-radius:7px;padding:3px 9px;font-size:11.5px;"><b style="color:${col};">${icon}</b> <b style="color:#eef2f8;">${gf}–${ga}</b> <span style="color:#8b9bb4;">vs ${opp}</span></span>`;
+  }).join(' ');
+  const f5Html=f5.slice(0,5).map(r=>{
+    const col=r.startsWith('W')?'#3dd9b3':r.startsWith('D')?'#facc15':'#f87171';
+    const icon=r.startsWith('W')?'W':r.startsWith('D')?'D':'L';
+    return `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border-radius:6px;padding:2px 8px;font-size:11px;margin:2px 3px 0 0;"><b style="color:${col};">${icon}</b><span style="color:#8b9bb4;">${r.slice(2)}</span></span>`;
+  }).join('');
+  const starsHtml=s?s.stars.map(p=>`<div style="color:#c4cdd8;font-size:11.5px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);">⭐ ${p}</div>`).join(''):'';
+  const ageCol=d.avgAge<=26?'#3dd9b3':d.avgAge>=29?'#f87171':'#facc15';
+  const formStatusHtml=d.played
+    ?`<span style="background:rgba(61,217,179,.08);color:#3dd9b3;border-radius:6px;padding:2px 8px;font-size:11px;">${d.pts}đ · HS ${d.gd>0?'+':''}${d.gd}</span>`
+    :`<span style="color:#5a6b85;font-size:11px;">chưa đấu</span>`;
+  return `
+    <div style="background:rgba(0,0,0,.25);border-radius:12px;padding:13px 14px;border:1px solid rgba(255,255,255,.07);">
+      <div style="font-weight:700;font-size:13.5px;margin-bottom:3px;">${team} <span style="font-size:11px;color:#5b8def;font-weight:500;background:rgba(91,141,239,.1);padding:1px 7px;border-radius:5px;">#${d.rank}</span></div>
+      <div style="font-size:11.5px;color:#7a8fa8;margin-bottom:8px;">👔 ${c[0]} <span style="color:#5a6b85;">(HLV ${c[1]}/100)</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+        <span style="font-size:11px;color:#7a8fa8;">💰 €${d.val}M</span>
+        <span style="font-size:11px;color:#7a8fa8;">·</span>
+        <span style="font-size:11px;color:${ageCol};">⏳ ${d.avgAge.toFixed(1)} tuổi</span>
+        <span style="font-size:11px;color:#7a8fa8;">·</span>
+        ${formStatusHtml}
+        ${s?`<span style="font-size:11px;background:rgba(255,255,255,.05);padding:1px 8px;border-radius:5px;color:#8b9bb4;">${s.formation}</span>`:''}
+      </div>
+      ${news.length?`<div style="margin-bottom:8px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px;">${news.map(n=>{
+        const bg=n.t==='🔥'?'rgba(61,217,179,.07)':n.t==='⚠️'?'rgba(251,146,60,.07)':n.t==='💔'?'rgba(248,113,113,.07)':'rgba(255,255,255,.04)';
+        const bd=n.t==='🔥'?'rgba(61,217,179,.2)':n.t==='⚠️'?'rgba(251,146,60,.2)':n.t==='💔'?'rgba(248,113,113,.2)':'rgba(255,255,255,.08)';
+        return `<div style="display:flex;gap:7px;align-items:flex-start;background:${bg};border:1px solid ${bd};border-radius:8px;padding:6px 9px;margin-bottom:5px;"><span style="flex-shrink:0;font-size:13px;">${n.t}</span><span style="font-size:11.5px;color:#c4cdd8;line-height:1.55;">${n.n}</span></div>`;
+      }).join('')}</div>`:''}
+      ${wcRes.length?`<div style="margin-bottom:7px;display:flex;gap:5px;flex-wrap:wrap;">${wcHtml}</div>`:''}
+      ${f5Html?`<div style="margin-bottom:8px;">${f5Html}</div>`:''}
+      ${starsHtml?`<div style="margin-top:6px;">${starsHtml}</div>`:''}
+    </div>`;
+}
+
+function renderPredictions(){
+  const el=document.getElementById('predictionList');
+  if(!el) return;
+  const byTeam={};DATA.forEach(d=>byTeam[d.team]=d);
+
+  // Phân 3 lớp: (1) đang có kèo bet365 & chưa đá — ưu tiên hiển thị TRÊN CÙNG vì đây là phần
+  // "đang hoạt động" cần theo dõi nhất; (2) đã có kết quả thật — gộp xuống dưới, vẫn nhóm theo bảng;
+  // (3) chưa có kèo & chưa đá — xếp cuối. Mỗi lớp vẫn giữ nhóm theo bảng (A,B,C...) như cũ.
+  const oddsGroups={}, playedGroups={}, pendingGroups={};
+  let matchIdx=0;
+  FIXTURES.forEach(fx=>{
+    const idx=matchIdx++;
+    const [grp,tA,tB]=fx;
+    const a=byTeam[tA],b=byTeam[tB];
+    if(!a||!b) return;
+    const playedKey=tA+'|'+tB;
+    const actualScore=typeof PLAYED_R2!=='undefined'?PLAYED_R2[playedKey]:null;
+      const playedBadge=actualScore?`<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(61,217,179,.1);color:#3dd9b3;border-radius:7px;padding:3px 10px;font-size:11px;font-weight:700;border:1px solid rgba(61,217,179,.25);">✓ KQ thực: ${actualScore[0]}–${actualScore[1]}</span>`:'';
+      let predBar,explainHtml='';
+      if(actualScore){
+        predBar=`<div style="height:28px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:800;color:#eef2f8;">${tA} <span style="font-size:18px;color:#3dd9b3;">${actualScore[0]}–${actualScore[1]}</span> ${tB}</div>`;
+      } else {
+        const oddsEntry=BET365_ODDS[playedKey];
+        const fav=oddsEntry?resolveFav(playedKey,oddsEntry):null;
+        const buckets=(oddsEntry&&fav)?marginDistFromLadder(oddsEntry.ladder,fav):null;
+        const hasGibot=Object.prototype.hasOwnProperty.call(HANDICAP_GIBOT,playedKey);
+        const h0=hasGibot?HANDICAP_GIBOT[playedKey]:0;
+        if(buckets){
+          _predBuckets[idx]=buckets;
+          const favTeam=fav==='A'?tA:tB;
+          const pFavWin=favWinTotal(buckets,fav==='A'?-1:1)*100;
+          const pNonWin=100-pFavWin;
+          const init=handicapSplit(buckets,h0);
+          const kMin=minRungK(oddsEntry.ladder);
+          // pFavWin/pNonWin giờ luôn là "thắng cách biệt" / "không thắng cách biệt" đúng nghĩa (hoà
+          // hoặc thua) — kể cả khi bet365 không có mốc nhỏ (kMin>1), nhờ đã ngoại suy lùi các mốc
+          // thiếu (margin 1..kMin-1) trong marginDistFromLadder, thay vì gộp nhầm vào cục "không thắng".
+          const nonWinLabel='không thắng cách biệt (hoà hoặc thua)'+(kMin>1?` (ước lượng thêm cho mức 1–${kMin-1} bàn do bet365 không có kèo phụ nhỏ hơn ${kMin-0.5} cho trận này)`:'');
+          const nonWinShort='Không thắng cách biệt';
+          // "Kèo chính" = mốc có xác suất gần 50/50 nhất (cân bằng nhất), chỉ để hiển thị diễn giải — không ảnh hưởng buckets
+          const mainLine=oddsEntry.ladder.reduce((best,l)=>{
+            const d=Math.abs(impliedProbFav(l.oddsFav,l.oddsUnd)-0.5);
+            return (!best||d<best.d)?{line:l.line,d}:best;
+          },null);
+          explainHtml=`<div style="margin-bottom:10px;">💡 <b>${favTeam}</b> được bet365 đánh giá cao hơn, chấp <b>${Math.abs(mainLine.line)}</b> bàn ở kèo chính. Xác suất ${favTeam} thắng cách biệt: <b>${pFavWin.toFixed(1)}%</b>; ${nonWinLabel}: <b>${pNonWin.toFixed(1)}%</b>.</div>`;
+          predBar=`<div style="background:rgba(255,255,255,.03);border-radius:10px;padding:8px 10px 4px;">
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#8b9bb4;margin-bottom:2px;padding:0 4px;">
+                <span style="color:#3dd9b3;font-weight:700;">${favTeam} thắng cách biệt ${pFavWin.toFixed(1)}%</span>
+                <span style="color:#facc15;">${nonWinShort} ${pNonWin.toFixed(1)}%</span>
+              </div>
+              <div id="distSvg-${idx}">${distCurveSVG(tA,tB,buckets,h0,idx)}</div>
+              <div onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:8px;margin-top:6px;padding:0 4px;flex-wrap:wrap;">
+                <label style="font-size:11px;color:#8b9bb4;">Kèo chấp (B−A):</label>
+                <input type="number" step="any" value="${h0}" id="hcp-${idx}" oninput="updateHandicap(${idx},'${tA}','${tB}')" onclick="event.stopPropagation()"
+                       style="width:64px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:6px;color:#eef2f8;font-size:12px;padding:4px 6px;">
+                ${hasGibot?`<span style="font-size:10px;color:#5b8def;background:rgba(91,141,239,.12);border-radius:5px;padding:2px 6px;">⚡ Tự động từ gibot.top</span>`:''}
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:6px;padding:0 4px;flex-wrap:wrap;gap:4px;">
+                <span style="color:#3dd9b3;">${tA} thắng kèo: <b id="hcpLt-${idx}">${init.lt.toFixed(1)}%</b></span>
+                <span style="color:#facc15;">Hoà kèo: <b id="hcpEq-${idx}">${init.eq.toFixed(1)}%</b></span>
+                <span style="color:#e07870;">${tB} thắng kèo: <b id="hcpGt-${idx}">${init.gt.toFixed(1)}%</b></span>
+              </div>
+            </div>`;
+        } else {
+          explainHtml=`<div style="margin-bottom:10px;color:var(--text-secondary);">⏳ Chưa có dữ liệu kèo chấp bet365 cho trận này.</div>`;
+          predBar=`<div style="height:28px;border-radius:8px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-secondary);border:1px dashed rgba(255,255,255,.1);">⏳ Chưa có dữ liệu kèo chấp bet365</div>`;
+        }
+      }
+      const matchHtml=`
+        <div class="pred-match" onclick="this.classList.toggle('open')">
+          <div class="pred-teams">
+            <span class="pt">${tA} <span class="rk">#${a.rank}</span></span>
+            <span class="vs">${actualScore?'KQ':'VS'}</span>
+            <span class="pt away">${tB} <span class="rk">#${b.rank}</span></span>
+          </div>
+          ${playedBadge?`<div style="margin-bottom:8px;">${playedBadge}</div>`:''}
+          ${predBar}
+          <div class="pred-explain">
+            ${explainHtml}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              ${teamInlineCard(tA,a)}
+              ${teamInlineCard(tB,b)}
+            </div>
+          </div>
+        </div>`;
+
+    // Xếp vào đúng lớp: đã có KQ thật → playedGroups; chưa đá nhưng có kèo bet365 → oddsGroups
+    // (lớp ưu tiên, hiển thị trên cùng); còn lại (chưa đá & chưa có kèo) → pendingGroups.
+    const target=actualScore?playedGroups:(BET365_ODDS[playedKey]?oddsGroups:pendingGroups);
+    (target[grp]=target[grp]||[]).push(matchHtml);
+  });
+
+  // collapsedDefault=true ⇒ thu gọn sẵn khi mới load (đỡ chiếm không gian) — bấm vào nhãn section
+  // để mở/ẩn (xem toggleSection). Lớp "đang có kèo" mở sẵn vì là phần cần theo dõi nhất.
+  function renderSection(label,groups,collapsedDefault){
+    const keys=Object.keys(groups).sort();
+    if(!keys.length) return '';
+    const count=keys.reduce((s,g)=>s+groups[g].length,0);
+    let body='';
+    keys.forEach(grp=>{
+      body+=`<div class="pred-group"><div class="pred-group-label">Bảng ${grp}</div>${groups[grp].join('')}</div>`;
+    });
+    return `<div class="pred-section-label${collapsedDefault?' collapsed':''}" onclick="toggleSection(this)">
+        <span class="pred-section-caret">▾</span> ${label} <span class="pred-section-count">(${count} trận)</span>
+      </div>
+      <div class="pred-section-body${collapsedDefault?' hidden':''}">${body}</div>`;
+  }
+
+  el.innerHTML =
+    renderSection('🔥 Đang có kèo bet365 — dự đoán xác suất', oddsGroups, false) +
+    renderSection('✅ Đã có kết quả lượt 2', playedGroups, true) +
+    renderSection('⏳ Chưa có dữ liệu kèo', pendingGroups, true);
+}
+
+// Thu/mở 1 section trong danh sách dự đoán (bấm vào nhãn section) — không liên quan tới việc
+// mở/đóng từng trận (.pred-match.open), chỉ ẩn/hiện cả khối để đỡ chiếm không gian màn hình.
+function toggleSection(labelEl){
+  labelEl.classList.toggle('collapsed');
+  const body=labelEl.nextElementSibling;
+  if(body) body.classList.toggle('hidden');
+}
+
+const SQUAD={
+  "Mexico":{stars:["Guillermo Ochoa (Club America, GK)","Hirving Lozano (San Diego FC)","Santiago Giménez (AC Milan)","Edson Álvarez (West Ham)","César Montes (Almería)"],formation:"4-3-3"},
+  "Nam Phi":{stars:["Ronwen Williams (Mamelodi Sundowns, GK)","Percy Tau (Al Ahly)","Lyle Foster (Burnley)","Themba Zwane (Mamelodi Sundowns)","Bongani Zungu (Amiens)"],formation:"4-4-2"},
+  "Hàn Quốc":{stars:["Kim Min-jae (Bayern Munich)","Son Heung-min (Tottenham)","Lee Kang-in (PSG)","Hwang Hee-chan (Wolverhampton)","Cho Gue-sung (Jeonbuk)"],formation:"4-3-3"},
+  "CH Séc":{stars:["Jindřich Staněk (GK, Slavia Praha)","Vladimír Coufal (West Ham)","Patrik Schick (Bayer Leverkusen)","Lukáš Provod (Slavia Praha)","Adam Hložek (Leverkusen)"],formation:"4-2-3-1"},
+  "Canada":{stars:["Alphonso Davies (Bayern Munich)","Jonathan David (Lille)","Cyle Larin (Valladolid)","Stephen Eustaquio (Porto)","Maxime Crépeau (GK, Nottm Forest)"],formation:"4-3-3"},
+  "Bosnia & Herzegovina":{stars:["Edin Džeko (Fenerbahçe)","Ermedin Demirović (Stuttgart)","Sead Kolašinac (Atalanta)","Haris Hajradinović (Kasımpaşa)","Benjamin Šeško (RB Leipzig)"],formation:"4-3-3"},
+  "Qatar":{stars:["Meshaal Barsham (GK, Al Sadd)","Akram Afif (Al Sadd)","Almoez Ali (Al Duhail)","Hassan Al-Haydos (Al Sadd)","Ismaeel Mohammad (Al Sadd)"],formation:"5-3-2"},
+  "Thụy Sỹ":{stars:["Gregor Kobel (Dortmund, GK)","Granit Xhaka (Bayer Leverkusen)","Manuel Akanji (Man City)","Ricardo Rodriguez (Torino)","Breel Embolo (Monaco)"],formation:"4-3-3"},
+  "Brazil":{stars:["Alisson (Liverpool, GK)","Vinicius Jr (Real Madrid)","Neymar (Santos)","Endrick (Real Madrid)","Marquinhos (PSG)"],formation:"4-2-3-1"},
+  "Morocco":{stars:["Yassine Bounou (GK, Al-Hilal)","Achraf Hakimi (PSG)","Brahim Diaz (Real Madrid)","Hakim Ziyech (Galatasaray)","Sofyan Amrabat (Fiorentina)"],formation:"4-3-3"},
+  "Haiti":{stars:["Wilson Isidor (Sunderland)","Jean-Ricner Bellegarde (Wolves)","Frantzdy Pierrot (forward)","Derrick Etienne Jr (Columbus)","Ruben Providence (midfield)"],formation:"4-4-2"},
+  "Scotland":{stars:["Angus Gunn (GK, Norwich)","Andrew Robertson (Liverpool)","Scott McTominay (Napoli)","John McGinn (Aston Villa)","Che Adams (Southampton)"],formation:"4-2-3-1"},
+  "Mỹ":{stars:["Matt Turner (GK, Crystal Palace)","Christian Pulisic (AC Milan)","Gio Reyna (Nottm Forest)","Tyler Adams (Bournemouth)","Ricardo Pepi (Groningen)"],formation:"4-3-3"},
+  "Paraguay":{stars:["Antony Silva (GK)","Gustavo Gómez (Palmeiras)","Miguel Almirón (Atlanta United)","Diego Gómez (Brighton)","Julio Enciso (Brighton)"],formation:"5-3-2"},
+  "Australia":{stars:["Mathew Ryan (GK, Real Sociedad)","Harry Souttar (Stoke)","Jackson Irvine (St Pauli)","Mathew Leckie (Melbourne City)","Mitchell Duke (Fagiano Okayama)"],formation:"4-4-2"},
+  "Thổ Nhĩ Kỳ":{stars:["Altay Bayındır (Man Utd, GK)","Hakan Çalhanoğlu (Inter Milan)","Arda Güler (Real Madrid)","Kenan Yildiz (Juventus)","Cenk Tosun (Besiktas)"],formation:"4-3-3"},
+  "Đức":{stars:["Manuel Neuer (Bayern Munich, GK)","Antonio Rüdiger (Real Madrid)","Florian Wirtz (Bayern Munich)","Jamal Musiala (Bayern Munich)","Kai Havertz (Arsenal)"],formation:"4-2-3-1"},
+  "Curacao":{stars:["Eloy Room (GK, Fort Lauderdale)","Leandro Bacuna (Cardiff)","Livano Comenencia (forward)","Ethan Do Coco (Sochaux)","Cuco Martina (veteran)"],formation:"4-3-3"},
+  "Bờ Biển Ngà":{stars:["Yahia Fofana (GK, Leicester)","Amad Diallo (Man Utd)","Simon Adingra (Brighton)","Seko Fofana (Al-Nassr)","Franck Kessié (Barcelona)"],formation:"4-3-3"},
+  "Ecuador":{stars:["Hernán Galíndez (GK)","Piero Hincapié (Bayer Leverkusen)","Moisés Caicedo (Chelsea)","Kendry Páez (Independiente)","Enner Valencia (Internacional)"],formation:"4-3-3"},
+  "Hà Lan":{stars:["Bart Verbruggen (GK, Brighton)","Virgil van Dijk (Liverpool)","Frenkie de Jong (Barcelona)","Tijani Reijnders (AC Milan)","Cody Gakpo (Liverpool)"],formation:"4-3-3"},
+  "Nhật Bản":{stars:["Shuichi Gonda (GK, Shimizu)","Takehiro Tomiyasu (Arsenal)","Daichi Kamada (Lazio)","Kaoru Mitoma (Brighton)","Ao Tanaka (Dortmund)"],formation:"4-2-3-1"},
+  "Thụy Điển":{stars:["Kristoffer Nordfeldt (GK)","Victor Lindelöf (Man Utd)","Lucas Bergvall (Tottenham)","Alexander Isak (Newcastle)","Viktor Gyökeres (Sporting CP)"],formation:"4-3-3"},
+  "Tunisia":{stars:["Aymen Dahmen (GK)","Dylan Bronn (Salernitana)","Youssef Msakni (Al-Arabi)","Hannibal Mejbri (Sevilla)","Seifeddine Jaziri (Zamalek)"],formation:"4-4-2"},
+  "Bỉ":{stars:["Koen Casteels (GK, Wolfsburg)","Kevin De Bruyne (Napoli)","Romelu Lukaku (Napoli)","Lois Openda (RB Leipzig)","Arthur Theate (Stade Rennais)"],formation:"4-3-3"},
+  "Ai Cập":{stars:["Mohamed Abou Gabal (GK)","Omar Marmoush (Man City)","Mostafa Mohamed (Nantes)","Ahmed Hegazy (Al-Ittihad)","Trézéguet (Kasımpaşa)"],formation:"4-2-3-1"},
+  "Iran":{stars:["Alireza Beiranvand (GK, Antwerp)","Mehdi Taremi (Inter Milan)","Sardar Azmoun (Roma)","Ali Gholizadeh (Charleroi)","Sadegh Moharrami (Dinamo Zagreb)"],formation:"4-3-3"},
+  "New Zealand":{stars:["Joe Gauci (GK, Adelaide)","Winston Reid (Brentford)","Chris Wood (Nottm Forest)","Liberato Cacace (Empoli)","Clayton Lewis (Yokohama F.Marinos)"],formation:"4-2-3-1"},
+  "Tây Ban Nha":{stars:["David Raya (GK, Arsenal)","Marc Cucurella (Chelsea)","Pedri (Barcelona)","Lamine Yamal (Barcelona)","Nico Williams (Athletic Bilbao)"],formation:"4-3-3"},
+  "Cape Verde":{stars:["Vozinha (GK, Cova Piedade)","Stopira (Bodø/Glimt)","Garry Rodrigues (Galatasaray)","Jovane Cabral (Sporting CP)","Ryan Mendes (Al-Qadsiah)"],formation:"4-4-2"},
+  "Saudi Arabia":{stars:["Mohammed Al-Owais (GK, Al-Hilal)","Saud Abdulhamid (Roma)","Salem Al-Dawsari (Al-Hilal)","Firas Al-Buraikan (Al-Fateh)","Ali Al-Bulaihi (Al-Hilal)"],formation:"4-3-3"},
+  "Uruguay":{stars:["Sergio Rochet (GK, Nacional)","José María Giménez (Atletico Madrid)","Federico Valverde (Real Madrid)","Darwin Núñez (Liverpool)","Rodrigo Bentancur (Tottenham)"],formation:"4-3-3"},
+  "Pháp":{stars:["Mike Maignan (GK, AC Milan)","Jules Koundé (Barcelona)","Kylian Mbappé (Real Madrid)","Marcus Thuram (Inter Milan)","Ousmane Dembélé (PSG)"],formation:"4-3-3"},
+  "Senegal":{stars:["Edouard Mendy (GK, Al-Ahli)","Kalidou Koulibaly (Al-Hilal)","Sadio Mané (Al Nassr)","Ismaïla Sarr (Crystal Palace)","Idrissa Gueye (Everton)"],formation:"4-3-3"},
+  "Iraq":{stars:["Jalal Hassan (GK)","Ali Adnan (San Jose Earthquakes)","Amjad Attwan (Al-Zawraa)","Aymen Hussein (Al-Zawraa)","Alaa Abbas (midfield)"],formation:"5-4-1"},
+  "Na Uy":{stars:["Ørjan Nyland (GK, Southampton)","Leo Ostigard (Napoli)","Martin Ødegaard (Arsenal)","Erling Haaland (Man City)","Alexander Sørloth (Atletico Madrid)"],formation:"4-3-3"},
+  "Argentina":{stars:["Emiliano Martínez (GK, Aston Villa)","Cristian Romero (Tottenham)","Alexis Mac Allister (Liverpool)","Lionel Messi (Inter Miami)","Lautaro Martinez (Inter Milan)"],formation:"4-3-3"},
+  "Algeria":{stars:["Luca Zidane (GK)","Ramy Bensebaïni (Dortmund)","Riyad Mahrez (Al-Ahli)","Ibrahim Maza (Hertha Berlin)","Rayan Ait Nouri (Man City)"],formation:"4-3-3"},
+  "Áo":{stars:["Patrick Pentz (GK, Bayer Leverkusen)","David Alaba (Real Madrid)","Konrad Laimer (Bayern Munich)","Marcel Sabitzer (Man Utd)","Marko Arnautovic (Man Utd)"],formation:"4-2-3-1"},
+  "Jordan":{stars:["Amer Shafi (GK)","Musa Al-Taamari (Montpellier)","Baha' Abdulrahman (Al-Faisaly)","Mohammad Abu Zema (midfield)","Ahmad Hayel (forward)"],formation:"5-4-1"},
+  "Bồ Đào Nha":{stars:["Diogo Costa (GK, Porto)","Rúben Dias (Man City)","Joao Neves (PSG)","Bruno Fernandes (Man Utd)","Cristiano Ronaldo (Al Nassr)"],formation:"4-3-3"},
+  "CHDC Congo":{stars:["Joël Kiassumbua (GK)","Chancel Mbemba (Marseille)","Arthur Masuaku (Besiktas)","Cédric Bakambu (Villarreal)","Yannick Bolasie (Göztepe)"],formation:"4-4-2"},
+  "Uzbekistan":{stars:["Abdukodir Khusanov (Man City)","Eldor Shomurodov (Roma)","Abbosbek Fayzullaev (Lokomotiv)","Otabek Shukurov (CSKA Moskva)","Jasur Yakhshiboev (forward)"],formation:"4-3-3"},
+  "Colombia":{stars:["Camilo Vargas (GK, Atlas)","Dávinson Sánchez (Galatasaray)","James Rodríguez (Rayo Vallecano)","Luis Díaz (Liverpool)","Jhon Durán (Aston Villa)"],formation:"4-3-3"},
+  "Anh":{stars:["Jordan Pickford (GK, Everton)","Kyle Walker (Man City)","Declan Rice (Arsenal)","Jude Bellingham (Real Madrid)","Harry Kane (Bayern Munich)"],formation:"4-2-3-1"},
+  "Croatia":{stars:["Dominik Livaković (GK, Fenerbahçe)","Joško Gvardiol (Man City)","Luka Modrić (Real Madrid)","Mateo Kovačić (Man City)","Bruno Petković (Dinamo Zagreb)"],formation:"4-3-3"},
+  "Ghana":{stars:["Lawrence Ati-Zigi (GK, St. Gallen)","Thomas Partey (Arsenal)","Mohammed Kudus (West Ham)","Jordan Ayew (Crystal Palace)","Antoine Semenyo (Bournemouth)"],formation:"4-2-3-1"},
+  "Panama":{stars:["Luis Mejía (GK)","Roderick Miller (Columbus)","Adalberto Carrasquilla (Houston Dynamo)","Rolando Blackburn (forward)","Cecilio Waterman (forward)"],formation:"5-4-1"},
+};
+
+const FORM5={
+  "Mexico":["W vs Jamaica (3/26)","W vs Costa Rica (3/26)","D vs Honduras (6/26)","W vs Guatemala (6/26)","L vs Colombia (6/26)"],
+  "Nam Phi":["W vs Zimbabwe (3/26)","D vs Ghana (3/26)","W vs Lesotho (6/26)","L vs Nigeria (6/26)","D vs Mozambique (6/26)"],
+  "Hàn Quốc":["W vs Vietnam (3/26)","W vs China (3/26)","D vs Japan (6/26)","W vs Thailand (6/26)","W vs Australia (6/26)"],
+  "CH Séc":["W vs Malta (3/26)","D vs Slovakia (3/26)","W vs Lithuania (6/26)","L vs Germany (6/26)","D vs Hungary (6/26)"],
+  "Canada":["W vs Cuba (3/26)","W vs Panama (3/26)","D vs Mexico (6/26)","W vs El Salvador (6/26)","W vs Jamaica (6/26)"],
+  "Bosnia & Herzegovina":["W vs Gibraltar (3/26)","W vs Malta (3/26)","D vs Bulgaria (6/26)","W vs Northern Ireland (6/26)","D vs Romania (6/26)"],
+  "Qatar":["W vs Jordan (3/26)","D vs Oman (3/26)","W vs Bahrain (6/26)","L vs Saudi Arabia (6/26)","W vs Kuwait (6/26)"],
+  "Thụy Sỹ":["W vs Belarus (3/26)","W vs Kosovo (3/26)","D vs Norway (6/26)","W vs Iceland (6/26)","W vs Wales (6/26)"],
+  "Brazil":["W vs Croatia (3/26)","W vs Panama (3/26)","W vs Egypt (3/26)","L vs Japan (4/26)","D vs France (5/26)"],
+  "Morocco":["W vs Comoros (3/26)","W vs Sudan (3/26)","W vs South Africa (3/26)","W vs Gabon (6/26)","D vs Norway (6/26)"],
+  "Haiti":["L vs Jamaica (3/26)","D vs Suriname (3/26)","L vs Costa Rica (5/26)","W vs Grenada (6/26)","L vs El Salvador (6/26)"],
+  "Scotland":["W vs Slovenia (3/26)","D vs Greece (3/26)","W vs Kosovo (6/26)","W vs Armenia (6/26)","W vs Moldova (6/26)"],
+  "Mỹ":["W vs Venezuela (3/26)","W vs Bolivia (3/26)","D vs Mexico (5/26)","W vs Germany (6/26)","W vs Brazil (6/26)"],
+  "Paraguay":["D vs Bolivia (3/26)","L vs Argentina (3/26)","W vs Venezuela (6/26)","D vs Ecuador (6/26)","W vs Peru (6/26)"],
+  "Australia":["W vs Saudi Arabia (3/26)","W vs Japan (3/26)","D vs South Korea (5/26)","W vs New Zealand (6/26)","D vs China (6/26)"],
+  "Thổ Nhĩ Kỳ":["W vs Bulgaria (3/26)","W vs Albania (3/26)","W vs Serbia (6/26)","D vs Romania (6/26)","W vs Croatia (6/26)"],
+  "Đức":["W vs Finland (3/26)","W vs Poland (3/26)","W vs Ukraine (6/26)","W vs USA (6/26)","W vs Austria (6/26)"],
+  "Curacao":["D vs Trinidad (3/26)","W vs Barbados (3/26)","L vs Costa Rica (5/26)","W vs Guyana (6/26)","D vs Suriname (6/26)"],
+  "Bờ Biển Ngà":["W vs Zambia (3/26)","W vs Madagascar (3/26)","W vs Cameroon (6/26)","W vs Ghana (6/26)","W vs Guinea (6/26)"],
+  "Ecuador":["W vs Bolivia (3/26)","D vs Peru (3/26)","W vs Venezuela (6/26)","W vs Chile (6/26)","D vs Paraguay (6/26)"],
+  "Hà Lan":["W vs Bulgaria (3/26)","W vs Cyprus (3/26)","W vs Switzerland (5/26)","D vs France (6/26)","W vs Belgium (6/26)"],
+  "Nhật Bản":["W vs Australia (3/26)","W vs Saudi Arabia (3/26)","W vs Brazil (4/26)","W vs South Korea (6/26)","W vs Germany (6/26)"],
+  "Thụy Điển":["W vs Kosovo (3/26)","W vs Moldova (3/26)","W vs Norway (5/26)","W vs Denmark (6/26)","W vs Finland (6/26)"],
+  "Tunisia":["W vs Ethiopia (3/26)","D vs Algeria (3/26)","L vs Egypt (5/26)","D vs Libya (6/26)","W vs Benin (6/26)"],
+  "Bỉ":["W vs Kosovo (3/26)","W vs Lithuania (3/26)","D vs Netherlands (5/26)","W vs Poland (6/26)","W vs France (6/26)"],
+  "Ai Cập":["W vs Senegal (3/26)","W vs Tanzania (3/26)","W vs Nigeria (5/26)","W vs Tunisia (5/26)","D vs Morocco (6/26)"],
+  "Iran":["W vs UAE (3/26)","W vs Iraq (3/26)","W vs Tajikistan (6/26)","W vs Uzbekistan (6/26)","D vs Japan (6/26)"],
+  "New Zealand":["W vs Fiji (3/26)","W vs Tahiti (3/26)","D vs Australia (5/26)","W vs India (6/26)","W vs Solomon Islands (6/26)"],
+  "Tây Ban Nha":["W vs Denmark (3/26)","W vs Portugal (3/26)","W vs Croatia (5/26)","W vs Netherlands (5/26)","D vs France (6/26)"],
+  "Cape Verde":["W vs Gambia (3/26)","D vs Guinea-Bissau (3/26)","W vs Sierra Leone (6/26)","D vs Mauritania (6/26)","W vs Liberia (6/26)"],
+  "Saudi Arabia":["W vs Kuwait (3/26)","W vs Bahrain (3/26)","W vs Qatar (5/26)","D vs UAE (6/26)","W vs Oman (6/26)"],
+  "Uruguay":["W vs Bolivia (3/26)","D vs Peru (3/26)","W vs Ecuador (5/26)","W vs Chile (6/26)","W vs Venezuela (6/26)"],
+  "Pháp":["W vs Israel (3/26)","W vs Ukraine (3/26)","D vs Brazil (5/26)","W vs Netherlands (5/26)","D vs Belgium (6/26)"],
+  "Senegal":["W vs Nigeria (3/26)","W vs Ivory Coast (3/26)","L vs Egypt (3/26)","W vs Cameroon (6/26)","W vs Guinea (6/26)"],
+  "Iraq":["W vs Kuwait (3/26)","W vs Oman (3/26)","D vs UAE (6/26)","L vs Iran (6/26)","W vs Syria (6/26)"],
+  "Na Uy":["W vs Estonia (3/26)","W vs Lithuania (3/26)","D vs Morocco (5/26)","W vs Sweden (6/26)","W vs Denmark (6/26)"],
+  "Argentina":["W vs Ecuador (3/26)","W vs Chile (3/26)","D vs Brazil (5/26)","W vs Colombia (6/26)","W vs Venezuela (6/26)"],
+  "Algeria":["W vs Niger (3/26)","D vs Tunisia (3/26)","W vs Cameroon (6/26)","W vs Senegal (6/26)","D vs Egypt (6/26)"],
+  "Áo":["W vs Cyprus (3/26)","W vs Estonia (3/26)","W vs Czech Republic (5/26)","L vs Germany (6/26)","W vs Poland (6/26)"],
+  "Jordan":["W vs Yemen (3/26)","W vs Palestine (3/26)","D vs Iraq (3/26)","D vs Kuwait (6/26)","W vs Bahrain (6/26)"],
+  "Bồ Đào Nha":["W vs Romania (3/26)","W vs Czech Republic (3/26)","W vs Spain (3/26)","L vs France (5/26)","W vs Italy (6/26)"],
+  "CHDC Congo":["W vs Mauritania (3/26)","W vs Ethiopia (3/26)","D vs Senegal (5/26)","W vs Rwanda (6/26)","D vs Mali (6/26)"],
+  "Uzbekistan":["W vs Mongolia (3/26)","W vs Afghanistan (3/26)","D vs Iran (3/26)","L vs Australia (5/26)","W vs Tajikistan (6/26)"],
+  "Colombia":["W vs Mexico (5/26)","W vs Paraguay (3/26)","D vs Chile (3/26)","W vs Peru (6/26)","W vs Bolivia (6/26)"],
+  "Anh":["W vs Albania (3/26)","W vs Finland (3/26)","W vs Hungary (5/26)","W vs Italy (6/26)","W vs Netherlands (6/26)"],
+  "Croatia":["W vs Cyprus (3/26)","W vs Kazakhstan (3/26)","D vs Serbia (5/26)","L vs Turkey (6/26)","W vs Slovakia (6/26)"],
+  "Ghana":["W vs Madagascar (3/26)","D vs Cameroon (3/26)","W vs Niger (6/26)","W vs Togo (6/26)","D vs Ivory Coast (6/26)"],
+  "Panama":["W vs Nicaragua (3/26)","W vs Honduras (3/26)","L vs Canada (3/26)","W vs Haiti (6/26)","W vs Curaçao (6/26)"],
+};
+
+
+// Sự kiện nổi bật trước trận lượt 2 (icon · nội dung)
+const PREMATCH_NEWS={
+  "Mexico":[
+    {t:"🔥","n":"Thắng tiếp Hàn Quốc 1-0 ở lượt 2, toàn thắng 2 trận, sớm vào vòng 1/8"},
+    {t:"⚠️","n":"Edson Álvarez đã nhận thẻ vàng lượt 1, cần tránh thẻ phạt trước lượt 3"},
+  ],
+  "Hàn Quốc":[
+    {t:"💔","n":"Thua Mexico 0-1 ở lượt 2 sau khi thắng CH Séc, cần thắng lượt 3 để rộng đường đi tiếp"},
+    {t:"📋","n":"HLV Hong cần tính toán lại nhân sự, có thể đổi sơ đồ trước trận quyết định"},
+  ],
+  "Nam Phi":[
+    {t:"💔","n":"Percy Tau chấn thương cơ đùi nhẹ sau lượt 1, khả năng ra sân còn chờ xác nhận"},
+    {t:"⚠️","n":"Cần ít nhất 1 điểm để không sớm bị loại sau thất bại 0-2 trước Mexico"},
+  ],
+  "CH Séc":[
+    {t:"🔥","n":"Patrik Schick trở lại sau 3 tuần nghỉ chấn thương, dự kiến đá như tiền đạo dự bị"},
+    {t:"⚠️","n":"Thất bại 1-2 trước Hàn Quốc — bắt buộc phải thắng để còn hy vọng đi tiếp"},
+  ],
+  "Canada":[
+    {t:"🔥","n":"Đại thắng Qatar 6-0 ở lượt 2 — Jonathan David lập hat-trick, vươn lên đầu bảng"},
+    {t:"📋","n":"Jesse Marsch có nhiều phương án xoay tua trước lượt 3 nhờ cách biệt bàn thắng lớn"},
+  ],
+  "Qatar":[
+    {t:"💔","n":"Thua đậm Canada 0-6 ở lượt 2, hiệu số bàn thắng xấu, áp lực phải thắng lượt 3"},
+    {t:"⚠️","n":"Akram Afif đã nhận thẻ vàng lượt 1, cần tránh tiếp tục mắc lỗi phòng ngự"},
+  ],
+  "Thụy Sỹ":[
+    {t:"💔","n":"Manuel Akanji rời sân sớm lượt 1 vì căng cơ, chờ đánh giá trước trận với Bosnia"},
+    {t:"🔥","n":"Granit Xhaka chơi xuất sắc, phủ sóng toàn bộ tuyến giữa — đầu tàu của Nati"},
+  ],
+  "Bosnia & Herzegovina":[
+    {t:"📋","n":"Edin Džeko tuyên bố đây có thể là World Cup cuối trong sự nghiệp — quyết tâm cao"},
+    {t:"⚠️","n":"Hàng thủ để thủng lưới pha phản công nhanh ở lượt 1 — cần cảnh giác hơn"},
+  ],
+  "Brazil":[
+    {t:"🔥","n":"Đại thắng Haiti 3-0 ở lượt 2 — Matheus Cunha lập cú đôi, Vinicius Jr. ấn định tỷ số"},
+    {t:"📋","n":"Raphinha có bàn bị từ chối vì việt vị phút 12 — vẫn tạo sức ép cực lớn lên khung thành Haiti"},
+  ],
+  "Scotland":[
+    {t:"💔","n":"Bất ngờ thua Morocco 0-1 ở lượt 2 sau khi bị Saibari chọc thủng lưới chỉ sau 72 giây"},
+    {t:"⚠️","n":"HLV Clarke cần điều chỉnh lại lối chơi trước lượt 3 quyết định để giữ cơ hội đi tiếp"},
+  ],
+  "Morocco":[
+    {t:"🔥","n":"Thắng Scotland 1-0 nhờ bàn mở tỷ số chớp nhoáng của Ismael Saibari — vươn lên đầu bảng C"},
+    {t:"📋","n":"Hòa Brazil rồi thắng Scotland — chỉ cần 1 điểm trước Haiti là chắc suất đi tiếp"},
+  ],
+  "Haiti":[
+    {t:"💔","n":"Thua đậm Brazil 0-3 ở lượt 2, đứng bét bảng C với hiệu số rất xấu"},
+    {t:"⚠️","n":"Cần thắng Scotland ở lượt 3 và chờ các kết quả khác để còn cơ hội mong manh"},
+  ],
+  "Mỹ":[
+    {t:"🔥","n":"Thắng Australia 2-0 ở lượt 2 (phản lưới của Burgess + đánh đầu của Alex Freeman) — sớm giành vé vòng 1/8"},
+    {t:"📋","n":"Toàn thắng 2 trận dù thiếu Pulisic, đang nắm lợi thế lớn nhất nhì bảng D"},
+  ],
+  "Australia":[
+    {t:"💔","n":"Thua Mỹ 0-2 ở lượt 2, trong đó có một bàn phản lưới của Cameron Burgess"},
+    {t:"⚠️","n":"Buộc phải thắng Thổ Nhĩ Kỳ ở lượt 3 để giữ hy vọng đi tiếp"},
+  ],
+  "Thổ Nhĩ Kỳ":[
+    {t:"💔","n":"Tiếp tục thua Paraguay 0-1 ở lượt 2 — toàn thua 2 trận, đứng bét bảng D"},
+    {t:"⚠️","n":"HLV Montella chịu áp lực lớn, cần một chiến thắng trước Australia để cứu vé đi tiếp"},
+  ],
+  "Paraguay":[
+    {t:"🔥","n":"Thắng ngược Thổ Nhĩ Kỳ 1-0 ở lượt 2 — bàn thắng của Maurício với kiến tạo của Enciso"},
+    {t:"📋","n":"Sau trận thua đậm Mỹ, chiến thắng này giúp Paraguay nuôi hy vọng vào vòng 1/8"},
+  ],
+  "Đức":[
+    {t:"🔥","n":"Ngược dòng nghẹt thở thắng Bờ Biển Ngà 2-1 — Deniz Undav vào sân từ ghế dự bị lập cú đôi, ấn định ở phút 94"},
+    {t:"📋","n":"Toàn thắng 2 trận, hiệu số +7 — sớm giành vé đi tiếp trước cả khi lượt 3 khởi tranh"},
+  ],
+  "Bờ Biển Ngà":[
+    {t:"💔","n":"Dẫn trước nhờ bàn của đội trưởng Franck Kessié nhưng để Đức lội ngược dòng 1-2 ở phút 94"},
+    {t:"⚠️","n":"Thua sít sao đáng tiếc — vẫn cần tính toán kỹ ở lượt 3 để giữ cơ hội đi tiếp"},
+  ],
+  "Ecuador":[
+    {t:"⚠️","n":"Hòa 0-0 trước Curacao ở lượt 2 — vẫn chưa thắng trận nào sau 2 lượt"},
+    {t:"📋","n":"Cần thắng đậm ở lượt 3 và chờ kết quả Bờ Biển Ngà-Đức để hy vọng đi tiếp"},
+  ],
+  "Curacao":[
+    {t:"🔥","n":"Cầm hòa 0-0 trước Ecuador ở lượt 2 — Eloy Room cứu thua 15 lần, hòa kỷ lục World Cup"},
+    {t:"📋","n":"Có điểm số lịch sử đầu tiên sau khi thua đậm Đức 1-7 ở lượt 1 — cơ hội đi tiếp vẫn mong manh"},
+  ],
+  "Hà Lan":[
+    {t:"🔥","n":"Đại thắng Thụy Điển 5-1 ở lượt 2 — Brian Brobbey và Cody Gakpo mỗi người lập cú đôi"},
+    {t:"📋","n":"Vươn lên đầu bảng F sau màn trình diễn áp đảo, hiệu số bàn thắng vượt trội"},
+  ],
+  "Thụy Điển":[
+    {t:"💔","n":"Thua đậm Hà Lan 1-5 ở lượt 2 sau trận thắng ấn tượng Tunisia trước đó"},
+    {t:"⚠️","n":"Cần thắng Nhật Bản ở lượt 3 và cải thiện hàng thủ để giữ cơ hội đi tiếp"},
+  ],
+  "Nhật Bản":[
+    {t:"🔥","n":"Đại thắng Tunisia 4-0 ở lượt 2 — 4 điểm sau 2 trận, cùng Hà Lan dẫn đầu bảng F"},
+    {t:"📋","n":"Cần ít nhất 1 điểm trước Thụy Điển ở lượt 3 để chắc suất đi tiếp"},
+  ],
+  "Tunisia":[
+    {t:"💔","n":"Thua tiếp Nhật Bản 0-4 ở lượt 2 — 0 điểm sau 2 trận, đứng bét bảng F"},
+    {t:"⚠️","n":"Gần như hết cơ hội đi tiếp, cần thắng đậm Hà Lan ở lượt 3 và chờ kết quả khác"},
+  ],
+  "Tây Ban Nha":[
+    {t:"🔥","n":"Đại thắng Saudi Arabia 4-0 ở lượt 2 sau khi hòa Cape Verde — 4 điểm, dẫn đầu bảng H"},
+    {t:"📋","n":"Lamine Yamal và hàng công bùng nổ — chỉ cần hòa Uruguay ở lượt 3 để chắc suất nhất bảng"},
+  ],
+  "Saudi Arabia":[
+    {t:"💔","n":"Thua đậm Tây Ban Nha 0-4 ở lượt 2 sau trận hòa Uruguay — 1 điểm sau 2 trận"},
+    {t:"⚠️","n":"Cần thắng Cape Verde ở lượt 3 và hy vọng Tây Ban Nha-Uruguay có kết quả thuận lợi"},
+  ],
+  "Uruguay":[
+    {t:"📋","n":"Hòa tiếp Cape Verde 2-2 ở lượt 2 — 2 điểm sau 2 trận hòa liên tiếp, chưa biết thắng"},
+    {t:"⚠️","n":"Cần thắng Tây Ban Nha ở lượt 3 để tự quyết định suất đi tiếp, không thể trông chờ kết quả khác"},
+  ],
+  "Cape Verde":[
+    {t:"🔥","n":"Cầm hòa tiếp Uruguay 2-2 sau khi hòa Tây Ban Nha — 2 điểm, màn trình diễn gây bất ngờ lớn"},
+    {t:"📋","n":"Chỉ cần hòa Saudi Arabia ở lượt 3 là có cơ hội thực tế đi tiếp lần đầu lịch sử"},
+  ],
+  "Pháp":[
+    {t:"🔥","n":"Thắng Iraq 3-0 ở lượt 2 — Mbappé kiến tạo lần 2, Thuram ghi bàn, toàn đội nhập cuộc xuất sắc"},
+    {t:"📋","n":"6 điểm toàn thắng, chắc suất đi tiếp — lượt 3 gặp Na Uy là trận đỉnh cao thực sự của bảng I"},
+  ],
+  "Na Uy":[
+    {t:"🔥","n":"Thắng Senegal 3-2 trong trận kịch tính — Haaland ghi thêm 1 bàn, cặp đôi Haaland-Ødegaard bùng nổ"},
+    {t:"📋","n":"6 điểm sau 2 trận, chắc suất đi tiếp — lượt 3 gặp Pháp là derby châu Âu đỉnh cao của bảng I"},
+  ],
+  "Senegal":[
+    {t:"💔","n":"Thua Na Uy 2-3 ở lượt 2 dù có bàn rút ngắn cách biệt — 0 điểm sau 2 trận, gần như bị loại"},
+    {t:"⚠️","n":"Cần thắng Iraq ở lượt 3 và trông chờ Na Uy-Pháp để còn cơ hội mong manh đi tiếp"},
+  ],
+  "Iraq":[
+    {t:"💔","n":"Thua Pháp 0-3 ở lượt 2 sau khi đã thua Na Uy 1-4 — 0 điểm, bị loại sớm khỏi WC 2026"},
+    {t:"⚠️","n":"Lượt 3 gặp Senegal là trận cuối để tích lũy kinh nghiệm, hướng đến kỳ WC tương lai"},
+  ],
+  "Argentina":[
+    {t:"🔥","n":"Thắng Áo 2-0 ở lượt 2 — 6 điểm tuyệt đối, Messi tiếp tục tỏa sáng với vai trò kiến tạo"},
+    {t:"📋","n":"Đỉnh bảng J không thể tranh cãi — lượt 3 gặp Jordan mang tính thủ tục, cơ hội thử nghiệm"},
+  ],
+  "Áo":[
+    {t:"💔","n":"Thua Argentina 0-2 ở lượt 2 sau chiến thắng ấn tượng trước Jordan — 3 điểm sau 2 trận"},
+    {t:"⚠️","n":"Lượt 3 gặp Algeria (cùng lúc Argentina-Jordan): cần ít nhất hòa để chắc vé đi tiếp bảng J"},
+  ],
+  "Algeria":[
+    {t:"⚠️","n":"Thua 0-3 trước Argentina — chưa có cú sút về đích nào trong 90 phút"},
+    {t:"💔","n":"Riyad Mahrez rời sân ở phút 60 sau pha va chạm, nghi ngờ chấn thương mắt cá"},
+  ],
+  "Jordan":[
+    {t:"⚠️","n":"Thua 1-3 trước Áo — hàng thủ vẫn mong manh trước những đường chuyền nhỏ"},
+    {t:"📋","n":"Musa Al-Taamari là điểm sáng duy nhất của Jordan — cần đồng đội hỗ trợ tốt hơn"},
+  ],
+  "Bồ Đào Nha":[
+    {t:"📋","n":"Cristiano Ronaldo đá 70 phút, thi đấu tốt nhưng chưa ghi bàn — đang muốn chứng minh"},
+    {t:"🔥","n":"Joao Neves kiểm soát nhịp độ tuyệt vời — đang thể hiện đẳng cấp PSG"},
+  ],
+  "Colombia":[
+    {t:"🔥","n":"Luis Díaz ghi bàn đẹp nhất lượt 1 với cú volley — đang vào phong độ cực tốt"},
+    {t:"📋","n":"James Rodríguez lần đầu đá chính tại WC sau 3 năm — quyết tâm viết tiếp lịch sử"},
+  ],
+  "CHDC Congo":[
+    {t:"📋","n":"Hòa Bồ Đào Nha 1-1 là kết quả tốt nhất lịch sử tại WC của CHDC Congo"},
+    {t:"🔥","n":"Chancel Mbemba thi đấu kiên định trong hàng thủ — trụ cột không thể thay thế"},
+  ],
+  "Uzbekistan":[
+    {t:"⚠️","n":"Thua 1-3 trước Colombia — hàng thủ cần cải thiện khi đối mặt pressing cao"},
+    {t:"🔥","n":"Abbosbek Fayzullaev ghi bàn danh dự, cho thấy chất lượng cầu thủ trẻ"},
+  ],
+  "Anh":[
+    {t:"🔥","n":"Jude Bellingham ghi bàn mở tỷ số và kiến tạo bàn thứ 3 — trình diễn hoàn hảo"},
+    {t:"📋","n":"Harry Kane đang cần 1 bàn để vượt qua kỷ lục ghi bàn của Wayne Rooney tại ĐTQG"},
+  ],
+  "Ghana":[
+    {t:"🔥","n":"Mohammed Kudus ghi bàn duy nhất và nhận Man of the Match — phong độ tuyệt vời"},
+    {t:"📋","n":"Thomas Partey đá tiền vệ phòng ngự, giải phóng không gian cho Kudus lên bóng"},
+  ],
+  "Croatia":[
+    {t:"⚠️","n":"Luka Modrić (40 tuổi) thi đấu 90 phút nhưng thể lực sút kém ở hiệp 2"},
+    {t:"💔","n":"Joško Gvardiol nhận thẻ vàng, cần cẩn thận để không bị treo giò trận 3"},
+  ],
+  "Panama":[
+    {t:"⚠️","n":"Thua 0-1 trước Ghana — bị áp đảo về tốc độ và kỹ thuật"},
+    {t:"📋","n":"HLV Christiansen sẽ dùng sơ đồ 5-3-2 thủ chắc hơn để hy vọng có điểm"},
+  ],
+  "Bỉ":[
+    {t:"📋","n":"Hòa Iran 0-0 ở lượt 2 (có pha bị từ chối bàn vì VAR) — 2 điểm sau 2 trận hòa liên tiếp"},
+    {t:"⚠️","n":"Cần thắng New Zealand ở lượt 3 để chắc suất đi tiếp, không thể hòa thêm lần nữa"},
+  ],
+  "Iran":[
+    {t:"📋","n":"Cầm hòa Bỉ 0-0 ở lượt 2 nhờ lối chơi phòng ngự chủ động — 2 điểm sau 2 trận"},
+    {t:"🔥","n":"Mehdi Taremi và Sardar Azmoun vẫn là cặp công thủ nguy hiểm nhất — cần bàn thắng ở lượt 3"},
+  ],
+  "Ai Cập":[
+    {t:"🔥","n":"Đánh bại New Zealand 3-1 ở lượt 2 — Omar Marmoush ghi 2 bàn, đang vào phong độ tốt nhất"},
+    {t:"📋","n":"4 điểm sau 2 trận, lượt 3 gặp Iran: cần hòa hoặc thắng là cơ bản chắc suất đi tiếp bảng G"},
+  ],
+  "New Zealand":[
+    {t:"💔","n":"Thua Ai Cập 1-3 ở lượt 2 — chỉ có 1 điểm sau 2 trận, cơ hội đi tiếp gần như đã hết"},
+    {t:"⚠️","n":"Lượt 3 gặp Bỉ: cần thắng đậm và trông chờ kết quả thuận lợi mới có cơ hội mong manh"},
+  ],
+};
+
+// Initial render — called here so SQUAD & FORM5 are fully defined
+refresh();
+
+(function(){
+  var fn=document.getElementById('footerNote');
+  if(fn) fn.innerHTML='<b>Phương pháp (mô hình lai):</b> các mốc CÓ kèo chấp bán nguyên (Asian handicap) thật trên bet365 được khử kèo (de-vig) rồi trừ lùi (telescoping) giữa 2 mốc liên tiếp — đây là số liệu thật 100% từ thị trường, không đổi. Nếu bet365 không có mốc nhỏ (đội quá mạnh, kèo bắt đầu từ -2.5 trở lên chẳng hạn), hệ thống tự ngoại suy lùi các mức cách biệt nhỏ còn thiếu (1 bàn, 2 bàn...) bằng chính tốc độ giảm xác suất của trận đó, để "đội mạnh thắng ít bàn" không bị gộp nhầm vào cục "không thắng cách biệt". Tương tự, đuôi xa "X bàn trở lên" cũng được chia nhỏ thành nhiều mức giảm dần kiểu Poisson thay vì dồn vào 1 điểm. Mọi phần ngoại suy/chia nhỏ này luôn giữ ĐÚNG tổng % suy ra từ kèo thật, chỉ khác ở cách phân bổ nội bộ — và là ước lượng, không phải số market trực tiếp. Hạng #N chỉ là hạng FIFA ranking, không dùng để tính xác suất. Chưa tính chấn thương, thẻ phạt, sân nhà — chỉ mang tính tham khảo, và phụ thuộc vào việc đã có dữ liệu kèo bet365 cho trận đó hay chưa.';
+})();
+
+(function(){
+  var items=document.querySelectorAll('.nav-item');
+  var sidebar=document.getElementById('sidebar');
+  var mt=document.getElementById('menuToggle');
+  if(mt) mt.addEventListener('click',function(){sidebar.classList.toggle('open');});
+  items.forEach(function(it){
+    it.addEventListener('click',function(){
+      var t=it.dataset.target;
+      var el=document.getElementById(t);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+      sidebar.classList.remove('open');
+    });
+  });
+  var panels=['predictions'];
+  function spy(){
+    var pos=window.scrollY+120,cur=panels[0];
+    panels.forEach(function(p){var el=document.getElementById(p);if(el&&el.offsetTop<=pos)cur=p;});
+    items.forEach(function(it){it.classList.toggle('active',it.dataset.target===cur);});
+  }
+  window.addEventListener('scroll',spy,{passive:true});spy();
+})();
+</script>
+</body>
+</html>
