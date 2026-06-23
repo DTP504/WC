@@ -1,2 +1,2 @@
-# 2026_WC
+# WC
 thuật toán
