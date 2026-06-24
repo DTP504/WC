@@ -425,6 +425,7 @@ document.addEventListener('DOMContentLoaded', syncThemeBtn);
     <!-- PREDICTIONS -->
     <section class="panel" id="predictions">
       <div class="panel-head"><h2>🔮 Dự đoán xác suất — Lượt 2 vòng bảng</h2></div>
+      <div id="predStats" style="margin-bottom:20px;"></div>
       <div class="card">
         <div class="card-sub">Xác suất suy ra trực tiếp từ kèo chấp bán nguyên (Asian handicap) trên bet365 bằng phương pháp khử kèo (de-vig) + trừ lùi (telescoping). Bấm vào mỗi trận để xem chi tiết.</div>
         <div class="card-sub" style="margin-top:-6px;">📊 <b style="color:#7aa2f2;">Mô hình năng lực</b> ở mỗi trận có bộ trọng số riêng (giá trị đội hình · phong độ 5 trận · HLV) ngay dưới biểu đồ — kéo để chỉnh, chỉ biểu đồ trận đó cập nhật, tự chuẩn hoá về tổng 100%.</div>
@@ -533,12 +534,13 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='24/06/2026 — lượt 2 đang diễn ra (23/24 trận)';
+if(_lu) _lu.textContent='24/06/2026 — lượt 2 hoàn tất (24/24 trận)';
 
 function fmt(n){return n.toFixed(1);}
 
 function refresh(){
   renderPredictions();
+  renderPredictionStats();
 }
 
 const FIXTURES=[
@@ -581,12 +583,12 @@ const PLAYED_R2 = {
   "Bồ Đào Nha|Uzbekistan":[5,0],
   "Anh|Ghana":[0,0],
   "Panama|Croatia":[0,1],
+  "Colombia|CHDC Congo":[1,0],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
 // Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
 const HANDICAP_GIBOT = {
-  "Colombia|CHDC Congo": -1.0,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -604,11 +606,6 @@ const HANDICAP_GIBOT = {
 //     {line:-1.5, oddsFav:2.60, oddsUnd:1.48},
 //   ]}
 const BET365_ODDS = {
-  "Colombia|CHDC Congo": { fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
-    {line:-1.5, oddsFav:2.500, oddsUnd:1.500},
-    {line:-2.5, oddsFav:5.250, oddsUnd:1.160},
-  ]},
 };
 
 // Suy ra đội được chấp ('A'/'B') cho 1 trận: ưu tiên fav khai báo thủ công trong BET365_ODDS,
@@ -880,6 +877,64 @@ function updateCapWeights(idx){
   set('cwValLbl-'+idx,w.val); set('cwFormLbl-'+idx,w.form); set('cwCoachLbl-'+idx,w.coach);
   const p=_capPairs[idx], el=document.getElementById('capSvg-'+idx);
   if(p&&el) el.innerHTML=distCurveSVG(p.tA,p.tB,capabilityBuckets(p.a,p.b,w),null,'c'+idx);
+}
+
+// ── Thống kê độ chính xác dự đoán ──
+// Dự đoán = đội có điểm Mô hình năng lực cao hơn (trọng số mặc định 50/30/20) sẽ thắng; đối chiếu
+// kết quả thật trong PLAYED_R2. Phân loại: Đúng (đội mạnh hơn thắng), Hòa, Bất ngờ (cửa dưới thắng).
+// Dùng mô hình năng lực vì kèo bet365 đã bị xóa khỏi BET365_ODDS sau khi trận kết thúc (không truy hồi).
+function predictionStats(){
+  const byTeam={}; DATA.forEach(d=>byTeam[d.team]=d);
+  let ok=0,draw=0,upset=0,total=0; const wrong=[];
+  if(typeof PLAYED_R2==='undefined') return {ok,draw,upset,total,wrong};
+  FIXTURES.forEach(fx=>{
+    const tA=fx[1],tB=fx[2],sc=PLAYED_R2[tA+'|'+tB];
+    if(!sc) return;
+    const a=byTeam[tA],b=byTeam[tB]; if(!a||!b) return;
+    const fav = capabilityScore(a,CAP_W_DEFAULT)>=capabilityScore(b,CAP_W_DEFAULT)?tA:tB;
+    const [ga,gb]=sc; total++;
+    if(ga===gb){ draw++; wrong.push({tA,tB,ga,gb,fav,kind:'draw'}); }
+    else { const winner=ga>gb?tA:tB; if(winner===fav) ok++; else { upset++; wrong.push({tA,tB,ga,gb,fav,kind:'upset'}); } }
+  });
+  return {ok,draw,upset,total,wrong};
+}
+function _statLegend(col,label,n){
+  return `<div style="display:flex;align-items:center;gap:9px;font-size:12.5px;">
+    <span style="width:12px;height:12px;border-radius:3px;background:${col};flex-shrink:0;"></span>
+    <span style="color:var(--c-body);flex:1;">${label}</span><b style="font-size:15px;color:var(--text);">${n}</b></div>`;
+}
+function renderPredictionStats(){
+  const el=document.getElementById('predStats'); if(!el) return;
+  const s=predictionStats();
+  if(!s.total){ el.innerHTML=''; return; }
+  const pct=Math.round(s.ok/s.total*100), C=2*Math.PI*42;
+  const segs=[[s.ok,'var(--positive)'],[s.draw,'var(--text-dim)'],[s.upset,'var(--negative)']];
+  let off=0, arcs='';
+  segs.forEach(([n,col])=>{
+    const len=(n/s.total)*C;
+    // var() phải đặt trong style="" (không phải thuộc tính stroke="var(...)") để chạy mọi trình duyệt
+    arcs+=`<circle cx="60" cy="60" r="42" fill="none" style="stroke:${col}" stroke-width="15" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"/>`;
+    off+=len;
+  });
+  el.innerHTML=`<div class="card">
+    <h3 style="margin-bottom:2px;">📈 Độ chính xác dự đoán</h3>
+    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#7aa2f2;">Mô hình năng lực</b> (trọng số mặc định 50/30/20): dự đoán đội mạnh hơn thắng, đối chiếu kết quả thật <b>${s.total}</b> trận đã đá. Kèo bet365 không thống kê được vì đã xóa sau khi trận kết thúc.</div>
+    <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+      <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
+        <svg viewBox="0 0 120 120" style="width:120px;height:120px;">${arcs}</svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div style="font-size:26px;font-weight:800;color:var(--positive);line-height:1;">${pct}%</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">${s.ok}/${s.total} trận</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:190px;flex:1;">
+        ${_statLegend('var(--positive)','✅ Đoán đúng đội thắng',s.ok)}
+        ${_statLegend('var(--text-dim)','🤝 Trận hòa',s.draw)}
+        ${_statLegend('var(--negative)','❌ Bất ngờ (cửa dưới thắng)',s.upset)}
+      </div>
+    </div>
+    ${s.wrong.length?`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;font-size:11.5px;color:var(--text-secondary);line-height:1.8;"><b style="color:var(--c-body);">Các trận model đoán trật:</b><br>${s.wrong.map(w=>`${w.tA} ${w.ga}–${w.gb} ${w.tB} <span style="color:var(--text-dim);">(dự đoán ${w.fav}${w.kind==='draw'?' thắng → thực ra hòa':' thắng → cửa dưới thắng'})</span>`).join('<br>')}</div>`:''}
+  </div>`;
 }
 
 // ── Tách xác suất theo kèo chấp: lớn hơn / bằng / nhỏ hơn kèo (chênh lệch tỉ số luôn là số nguyên) ──
