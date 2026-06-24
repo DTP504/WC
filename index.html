@@ -166,7 +166,11 @@
   .grid-1{display:grid;grid-template-columns:1fr;gap:var(--gap);}
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);}
 
-  /* Weight sliders */
+  /* Trọng số mô hình năng lực — bộ slider mini riêng cho từng trận, đặt ngay dưới biểu đồ năng lực */
+  .cw-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:7px;padding:0 2px;}
+  .cw-mini label{display:block;font-size:9.5px;color:var(--text-secondary);margin-bottom:3px;font-weight:600;white-space:nowrap;}
+  .cw-mini label b{color:#7aa2f2;font-weight:800;font-size:10.5px;}
+  .cw-mini input[type=range]{width:100%;accent-color:#5b8def;height:3px;cursor:pointer;}
   .weights{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
   .weight-ctl{
     background:var(--bg-card2);border-radius:var(--radius-sm);
@@ -378,6 +382,7 @@
       <div class="panel-head"><h2>🔮 Dự đoán xác suất — Lượt 2 vòng bảng</h2></div>
       <div class="card">
         <div class="card-sub">Xác suất suy ra trực tiếp từ kèo chấp bán nguyên (Asian handicap) trên bet365 bằng phương pháp khử kèo (de-vig) + trừ lùi (telescoping). Bấm vào mỗi trận để xem chi tiết.</div>
+        <div class="card-sub" style="margin-top:-6px;">📊 <b style="color:#7aa2f2;">Mô hình năng lực</b> ở mỗi trận có bộ trọng số riêng (giá trị đội hình · phong độ 5 trận · HLV) ngay dưới biểu đồ — kéo để chỉnh, chỉ biểu đồ trận đó cập nhật, tự chuẩn hoá về tổng 100%.</div>
         <div class="pred-grid" id="predictionList"></div>
       </div>
       <div class="footer-note" style="margin-top:20px;" id="footerNote"></div>
@@ -794,6 +799,64 @@ function distCurveSVG(tA,tB,buckets,handicap,uid){
   </svg>`;
 }
 
+// ── Mô hình NĂNG LỰC (tham khảo, ĐỘC LẬP hoàn toàn với kèo bet365) ──
+// Biểu đồ thứ 2 đặt song song biểu đồ kèo, để so sánh trực quan giữa "đánh giá thị trường" (bet365) và
+// "đánh giá định tính" từ 3 yếu tố nội tại của đội: giá trị đội hình (val, €M — lấy log vì chênh nhau
+// hàng chục lần), đẳng cấp HLV (coach 0–100) và phong độ 5 trận gần nhất (FORM5: W=3,D=1,L=0).
+// Trọng số mặc định: đội hình 50%, phong độ 30%, HLV 20%. MỖI TRẬN có 1 bộ trọng số riêng (_capW[idx])
+// chỉnh được bằng thanh trượt ngay dưới biểu đồ năng lực của trận đó — tự chuẩn hoá về tổng 1.
+// Đây KHÔNG phải số market — chỉ là ước lượng tham khảo.
+const CAP_W_DEFAULT={val:0.5, form:0.3, coach:0.2};
+const _capW={}; // _capW[idx] = {val,form,coach} riêng từng trận
+function form5Points(team){
+  const arr=(typeof FORM5!=='undefined'&&FORM5[team])||[];
+  let pts=0,n=0;
+  arr.slice(0,5).forEach(s=>{ n++; if(s[0]==='W')pts+=3; else if(s[0]==='D')pts+=1; });
+  return n?pts/(3*n):0.5; // 0..1, mặc định 0.5 nếu thiếu dữ liệu
+}
+// Chuẩn hoá min/max của log(val) trên toàn 48 đội (tính 1 lần) để đưa giá trị đội hình về thang 0..1.
+const _capValRange=(function(){
+  const ls=DATA.map(d=>Math.log(Math.max(1,d.val)));
+  return {lo:Math.min(...ls), hi:Math.max(...ls)};
+})();
+function capabilityScore(d,w){
+  w=w||CAP_W_DEFAULT;
+  const v=(_capValRange.hi>_capValRange.lo)
+    ?(Math.log(Math.max(1,d.val))-_capValRange.lo)/(_capValRange.hi-_capValRange.lo):0.5;
+  const c=Math.max(0,Math.min(1,(d.coach||40)/100));
+  const f=form5Points(d.team);
+  const sum=w.val+w.form+w.coach||1;
+  return (w.val*v + w.form*f + w.coach*c)/sum; // điểm sức mạnh tổng hợp 0..1
+}
+// Phân phối hiệu số (B−A) theo năng lực: đường chuông rời rạc quanh kỳ vọng μ = SCALE*(S_B − S_A)
+// (μ>0 nghĩa B mạnh hơn ⇒ lệch về phía B thắng). Cùng trục −6..+6 và cùng hàm vẽ với biểu đồ kèo.
+// w = bộ trọng số của riêng trận đang vẽ (mặc định CAP_W_DEFAULT nếu không truyền).
+const CAP_SCALE=5, CAP_SIGMA=1.5;
+function capabilityBuckets(dA,dB,w){
+  const R=DIST_RANGE;
+  const mu=CAP_SCALE*(capabilityScore(dB,w)-capabilityScore(dA,w));
+  const b=new Array(R*2+1).fill(0);
+  for(let i=0;i<b.length;i++){ const d=i-R; b[i]=Math.exp(-((d-mu)*(d-mu))/(2*CAP_SIGMA*CAP_SIGMA)); }
+  const s=b.reduce((a,c)=>a+c,0);
+  return b.map(x=>x/s); // tổng = 1
+}
+// Lưu cặp đội từng trận (theo idx) để vẽ lại biểu đồ năng lực khi người dùng kéo thanh trượt trọng số,
+// mà không cần render lại toàn bộ danh sách (giữ nguyên trạng thái mở/kèo tùy chỉnh của các trận).
+const _capPairs={};
+// Cập nhật trọng số CHO RIÊNG 1 trận (idx): đọc 3 thanh trượt của trận đó, chuẩn hoá về tổng 1, lưu vào
+// _capW[idx], rồi vẽ lại đúng biểu đồ năng lực của trận đó (không đụng các trận khác / biểu đồ kèo).
+function updateCapWeights(idx){
+  const gv=id=>{const e=document.getElementById(id);return e?Math.max(0,parseFloat(e.value)||0):0;};
+  let v=gv('cwVal-'+idx),f=gv('cwForm-'+idx),c=gv('cwCoach-'+idx),sum=v+f+c;
+  if(sum<=0){ v=f=c=1; sum=3; }
+  const w={val:v/sum, form:f/sum, coach:c/sum};
+  _capW[idx]=w;
+  const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=Math.round(val*100)+'%';};
+  set('cwValLbl-'+idx,w.val); set('cwFormLbl-'+idx,w.form); set('cwCoachLbl-'+idx,w.coach);
+  const p=_capPairs[idx], el=document.getElementById('capSvg-'+idx);
+  if(p&&el) el.innerHTML=distCurveSVG(p.tA,p.tB,capabilityBuckets(p.a,p.b,w),null,'c'+idx);
+}
+
 // ── Tách xác suất theo kèo chấp: lớn hơn / bằng / nhỏ hơn kèo (chênh lệch tỉ số luôn là số nguyên) ──
 const _predBuckets={};
 function handicapSplit(buckets,h){
@@ -933,6 +996,23 @@ function renderPredictions(){
           predBar=`<div style="height:28px;border-radius:8px;background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-secondary);border:1px dashed rgba(255,255,255,.1);">⏳ Chưa có dữ liệu kèo chấp bet365</div>`;
         }
       }
+      // Biểu đồ năng lực (tham khảo) — vẽ cho MỌI trận, song song bên dưới biểu đồ kèo bet365.
+      // Mỗi trận giữ bộ trọng số riêng trong _capW[idx] (mặc định 50/30/20, không mất khi render lại).
+      _capPairs[idx]={a,b,tA,tB};
+      const cw=_capW[idx]||(_capW[idx]={...CAP_W_DEFAULT});
+      const pV=Math.round(cw.val*100),pF=Math.round(cw.form*100),pC=Math.round(cw.coach*100);
+      const capChart=`<div style="background:rgba(91,141,239,.045);border:1px solid rgba(91,141,239,.14);border-radius:10px;padding:8px 10px 6px;margin-top:8px;">
+              <div style="font-size:10.5px;color:#7aa2f2;font-weight:700;margin-bottom:1px;padding:0 4px;">📊 Mô hình năng lực <span style="font-weight:500;color:#8b9bb4;">(đội hình · HLV · phong độ 5 trận) — tham khảo, độc lập với kèo</span></div>
+              <div id="capSvg-${idx}">${distCurveSVG(tA,tB,capabilityBuckets(a,b,cw),null,'c'+idx)}</div>
+              <div class="cw-mini-row" onclick="event.stopPropagation()">
+                <div class="cw-mini"><label>💰 Đội hình <b id="cwValLbl-${idx}">${pV}%</b></label>
+                  <input type="range" min="0" max="100" value="${pV}" id="cwVal-${idx}" oninput="updateCapWeights(${idx})" onclick="event.stopPropagation()"></div>
+                <div class="cw-mini"><label>📈 Phong độ <b id="cwFormLbl-${idx}">${pF}%</b></label>
+                  <input type="range" min="0" max="100" value="${pF}" id="cwForm-${idx}" oninput="updateCapWeights(${idx})" onclick="event.stopPropagation()"></div>
+                <div class="cw-mini"><label>👔 HLV <b id="cwCoachLbl-${idx}">${pC}%</b></label>
+                  <input type="range" min="0" max="100" value="${pC}" id="cwCoach-${idx}" oninput="updateCapWeights(${idx})" onclick="event.stopPropagation()"></div>
+              </div>
+            </div>`;
       const matchHtml=`
         <div class="pred-match" onclick="this.classList.toggle('open')">
           <div class="pred-teams">
@@ -942,6 +1022,7 @@ function renderPredictions(){
           </div>
           ${playedBadge?`<div style="margin-bottom:8px;">${playedBadge}</div>`:''}
           ${predBar}
+          ${capChart}
           <div class="pred-explain">
             ${explainHtml}
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -1291,7 +1372,7 @@ refresh();
 
 (function(){
   var fn=document.getElementById('footerNote');
-  if(fn) fn.innerHTML='<b>Phương pháp (mô hình lai):</b> các mốc CÓ kèo chấp bán nguyên (Asian handicap) thật trên bet365 được khử kèo (de-vig) rồi trừ lùi (telescoping) giữa 2 mốc liên tiếp — đây là số liệu thật 100% từ thị trường, không đổi. Nếu bet365 không có mốc nhỏ (đội quá mạnh, kèo bắt đầu từ -2.5 trở lên chẳng hạn), hệ thống tự ngoại suy lùi các mức cách biệt nhỏ còn thiếu (1 bàn, 2 bàn...) bằng chính tốc độ giảm xác suất của trận đó, để "đội mạnh thắng ít bàn" không bị gộp nhầm vào cục "không thắng cách biệt". Tương tự, đuôi xa "X bàn trở lên" cũng được chia nhỏ thành nhiều mức giảm dần kiểu Poisson thay vì dồn vào 1 điểm. Mọi phần ngoại suy/chia nhỏ này luôn giữ ĐÚNG tổng % suy ra từ kèo thật, chỉ khác ở cách phân bổ nội bộ — và là ước lượng, không phải số market trực tiếp. Hạng #N chỉ là hạng FIFA ranking, không dùng để tính xác suất. Chưa tính chấn thương, thẻ phạt, sân nhà — chỉ mang tính tham khảo, và phụ thuộc vào việc đã có dữ liệu kèo bet365 cho trận đó hay chưa.';
+  if(fn) fn.innerHTML='<b>Phương pháp (mô hình lai):</b> các mốc CÓ kèo chấp bán nguyên (Asian handicap) thật trên bet365 được khử kèo (de-vig) rồi trừ lùi (telescoping) giữa 2 mốc liên tiếp — đây là số liệu thật 100% từ thị trường, không đổi. Nếu bet365 không có mốc nhỏ (đội quá mạnh, kèo bắt đầu từ -2.5 trở lên chẳng hạn), hệ thống tự ngoại suy lùi các mức cách biệt nhỏ còn thiếu (1 bàn, 2 bàn...) bằng chính tốc độ giảm xác suất của trận đó, để "đội mạnh thắng ít bàn" không bị gộp nhầm vào cục "không thắng cách biệt". Tương tự, đuôi xa "X bàn trở lên" cũng được chia nhỏ thành nhiều mức giảm dần kiểu Poisson thay vì dồn vào 1 điểm. Mọi phần ngoại suy/chia nhỏ này luôn giữ ĐÚNG tổng % suy ra từ kèo thật, chỉ khác ở cách phân bổ nội bộ — và là ước lượng, không phải số market trực tiếp. Hạng #N chỉ là hạng FIFA ranking, không dùng để tính xác suất. Chưa tính chấn thương, thẻ phạt, sân nhà — chỉ mang tính tham khảo, và phụ thuộc vào việc đã có dữ liệu kèo bet365 cho trận đó hay chưa.<br><br><b>📊 Biểu đồ năng lực (biểu đồ thứ 2):</b> đặt song song để đối chiếu, vẽ cho MỌI trận và ĐỘC LẬP hoàn toàn với kèo bet365. Tính từ 3 yếu tố nội tại của mỗi đội — giá trị đội hình (50%, lấy log vì chênh nhau hàng chục lần), phong độ 5 trận gần nhất (30%, W=3/D=1/L=0) và đẳng cấp HLV (20%) — quy thành điểm sức mạnh 0–1, rồi suy ra hiệu số bàn kỳ vọng giữa 2 đội và vẽ thành đường chuông quanh mức đó. Đây là ước lượng định tính (KHÔNG phải số market), dùng để xem thị trường (kèo bet365) và năng lực thuần đánh giá có lệch nhau không.';
 })();
 
 (function(){
