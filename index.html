@@ -452,12 +452,12 @@ const RESULTS = {
   "Bỉ":[["Ai Cập",1,1,"D"],["Iran",0,0,"D"]],"Ai Cập":[["Bỉ",1,1,"D"],["New Zealand",3,1,"W"]],
   "Pháp":[["Senegal",3,1,"W"],["Iraq",3,0,"W"]],"Senegal":[["Pháp",1,3,"L"],["Na Uy",2,3,"L"]],
   "Na Uy":[["Iraq",4,1,"W"],["Senegal",3,2,"W"]],"Iraq":[["Na Uy",1,4,"L"],["Pháp",0,3,"L"]],
-  "Argentina":[["Algeria",3,0,"W"],["Áo",2,0,"W"]],"Algeria":[["Argentina",0,3,"L"]],
-  "Áo":[["Jordan",3,1,"W"],["Argentina",0,2,"L"]],"Jordan":[["Áo",1,3,"L"]],
-  "Bồ Đào Nha":[["CHDC Congo",1,1,"D"]],"CHDC Congo":[["Bồ Đào Nha",1,1,"D"]],
-  "Anh":[["Croatia",4,2,"W"]],"Croatia":[["Anh",2,4,"L"]],
-  "Ghana":[["Panama",1,0,"W"]],"Panama":[["Ghana",0,1,"L"]],
-  "Colombia":[["Uzbekistan",3,1,"W"]],"Uzbekistan":[["Colombia",1,3,"L"]],
+  "Argentina":[["Algeria",3,0,"W"],["Áo",2,0,"W"]],"Algeria":[["Argentina",0,3,"L"],["Jordan",2,1,"W"]],
+  "Áo":[["Jordan",3,1,"W"],["Argentina",0,2,"L"]],"Jordan":[["Áo",1,3,"L"],["Algeria",1,2,"L"]],
+  "Bồ Đào Nha":[["CHDC Congo",1,1,"D"],["Uzbekistan",5,0,"W"]],"CHDC Congo":[["Bồ Đào Nha",1,1,"D"]],
+  "Anh":[["Croatia",4,2,"W"],["Ghana",0,0,"D"]],"Croatia":[["Anh",2,4,"L"],["Panama",1,0,"W"]],
+  "Ghana":[["Panama",1,0,"W"],["Anh",0,0,"D"]],"Panama":[["Ghana",0,1,"L"],["Croatia",0,1,"L"]],
+  "Colombia":[["Uzbekistan",3,1,"W"]],"Uzbekistan":[["Colombia",1,3,"L"],["Bồ Đào Nha",0,5,"L"]],
 };
 
 const COACH = {
@@ -488,7 +488,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='23/06/2026 — lượt 2 đang diễn ra (19/24 trận)';
+if(_lu) _lu.textContent='24/06/2026 — lượt 2 đang diễn ra (23/24 trận)';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -532,15 +532,15 @@ const PLAYED_R2 = {
   "Argentina|Áo":[2,0],
   "Pháp|Iraq":[3,0],
   "Na Uy|Senegal":[3,2],
+  "Jordan|Algeria":[1,2],
+  "Bồ Đào Nha|Uzbekistan":[5,0],
+  "Anh|Ghana":[0,0],
+  "Panama|Croatia":[0,1],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
 // Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
 const HANDICAP_GIBOT = {
-  "Jordan|Algeria": 1.0,
-  "Bồ Đào Nha|Uzbekistan": -2.0,
-  "Anh|Ghana": -2.0,
-  "Panama|Croatia": 1.5,
   "Colombia|CHDC Congo": -1.0,
 };
 
@@ -559,29 +559,9 @@ const HANDICAP_GIBOT = {
 //     {line:-1.5, oddsFav:2.60, oddsUnd:1.48},
 //   ]}
 const BET365_ODDS = {
-  "Jordan|Algeria": { fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
-    {line:-1.5, oddsFav:2.425, oddsUnd:1.525},
-    {line:-2.5, oddsFav:4.650, oddsUnd:1.180},
-  ]},
-  "Bồ Đào Nha|Uzbekistan": { fav:'A', ladder:[
-    {line:-1.5, oddsFav:1.450, oddsUnd:2.675},
-    {line:-2.5, oddsFav:2.150, oddsUnd:1.675},
-    {line:-3.5, oddsFav:3.550, oddsUnd:1.275},
-  ]},
-  "Anh|Ghana": { fav:'A', ladder:[
-    {line:-1.5, oddsFav:1.575, oddsUnd:2.350},
-    {line:-2.5, oddsFav:2.425, oddsUnd:1.525},
-    {line:-3.5, oddsFav:4.400, oddsUnd:1.200},
-  ]},
-  "Panama|Croatia": { fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.475, oddsUnd:2.600},
-    {line:-1.5, oddsFav:2.350, oddsUnd:1.575},
-    {line:-2.5, oddsFav:4.250, oddsUnd:1.210},
-  ]},
   "Colombia|CHDC Congo": { fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.525, oddsUnd:2.425},
-    {line:-1.5, oddsFav:2.600, oddsUnd:1.475},
+    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
+    {line:-1.5, oddsFav:2.500, oddsUnd:1.500},
     {line:-2.5, oddsFav:5.250, oddsUnd:1.160},
   ]},
 };
@@ -1310,16 +1290,16 @@ const PREMATCH_NEWS={
     {t:"⚠️","n":"Lượt 3 gặp Algeria (cùng lúc Argentina-Jordan): cần ít nhất hòa để chắc vé đi tiếp bảng J"},
   ],
   "Algeria":[
-    {t:"⚠️","n":"Thua 0-3 trước Argentina — chưa có cú sút về đích nào trong 90 phút"},
-    {t:"💔","n":"Riyad Mahrez rời sân ở phút 60 sau pha va chạm, nghi ngờ chấn thương mắt cá"},
+    {t:"🔥","n":"Thắng ngược Jordan 2-1 ở lượt 2 — Benbouali (69') và Gouiri (82') ghi bàn từ 2 quả phạt góc hiệp 2"},
+    {t:"📋","n":"3 điểm đầu tiên sau khi thua Argentina — lượt 3 vẫn còn cơ hội tranh vé đi tiếp bảng J"},
   ],
   "Jordan":[
-    {t:"⚠️","n":"Thua 1-3 trước Áo — hàng thủ vẫn mong manh trước những đường chuyền nhỏ"},
-    {t:"📋","n":"Musa Al-Taamari là điểm sáng duy nhất của Jordan — cần đồng đội hỗ trợ tốt hơn"},
+    {t:"💔","n":"Dẫn trước nhờ Al-Rashdan (36') nhưng thua ngược Algeria 1-2 ở lượt 2 — vỡ trận từ 2 quả phạt góc"},
+    {t:"⚠️","n":"Thua cả 2 lượt, gần như hết cơ hội đi tiếp — lượt 3 chỉ còn đá vì danh dự"},
   ],
   "Bồ Đào Nha":[
-    {t:"📋","n":"Cristiano Ronaldo đá 70 phút, thi đấu tốt nhưng chưa ghi bàn — đang muốn chứng minh"},
-    {t:"🔥","n":"Joao Neves kiểm soát nhịp độ tuyệt vời — đang thể hiện đẳng cấp PSG"},
+    {t:"🔥","n":"Vùi dập Uzbekistan 5-0 ở lượt 2 — Ronaldo lập cú đúp (6', 39'), thêm Mendes, phản lưới Nematov và Leão"},
+    {t:"📋","n":"Ronaldo đã nổ súng, Bồ Đào Nha chiếm ngôi đầu bảng K — sáng cửa đi tiếp"},
   ],
   "Colombia":[
     {t:"🔥","n":"Luis Díaz ghi bàn đẹp nhất lượt 1 với cú volley — đang vào phong độ cực tốt"},
@@ -1330,24 +1310,24 @@ const PREMATCH_NEWS={
     {t:"🔥","n":"Chancel Mbemba thi đấu kiên định trong hàng thủ — trụ cột không thể thay thế"},
   ],
   "Uzbekistan":[
-    {t:"⚠️","n":"Thua 1-3 trước Colombia — hàng thủ cần cải thiện khi đối mặt pressing cao"},
-    {t:"🔥","n":"Abbosbek Fayzullaev ghi bàn danh dự, cho thấy chất lượng cầu thủ trẻ"},
+    {t:"💔","n":"Thua đậm Bồ Đào Nha 0-5 ở lượt 2 — bị Ronaldo và đồng đội áp đảo hoàn toàn"},
+    {t:"⚠️","n":"Thua cả 2 lượt với hiệu số rất xấu (-7), cơ hội đi tiếp gần như khép lại"},
   ],
   "Anh":[
-    {t:"🔥","n":"Jude Bellingham ghi bàn mở tỷ số và kiến tạo bàn thứ 3 — trình diễn hoàn hảo"},
-    {t:"📋","n":"Harry Kane đang cần 1 bàn để vượt qua kỷ lục ghi bàn của Wayne Rooney tại ĐTQG"},
+    {t:"📋","n":"Bị Ghana cầm hòa 0-0 ở lượt 2 — Kane bỏ lỡ cơ hội ngon phút cuối, bế tắc trước hàng thủ lùi sâu"},
+    {t:"⚠️","n":"Tuchel chưa tìm ra lời giải tấn công — vẫn tốp đầu bảng L nhưng cần thắng lượt 3 cho chắc suất"},
   ],
   "Ghana":[
-    {t:"🔥","n":"Mohammed Kudus ghi bàn duy nhất và nhận Man of the Match — phong độ tuyệt vời"},
-    {t:"📋","n":"Thomas Partey đá tiền vệ phòng ngự, giải phóng không gian cho Kudus lên bóng"},
+    {t:"🔥","n":"Cầm hòa Anh 0-0 đầy quả cảm ở lượt 2 — hàng thủ kỷ luật, Kudus vẫn là mũi nhọn nguy hiểm"},
+    {t:"📋","n":"4 điểm sau 2 trận, đang nắm quyền tự quyết suất đi tiếp ở lượt 3"},
   ],
   "Croatia":[
-    {t:"⚠️","n":"Luka Modrić (40 tuổi) thi đấu 90 phút nhưng thể lực sút kém ở hiệp 2"},
-    {t:"💔","n":"Joško Gvardiol nhận thẻ vàng, cần cẩn thận để không bị treo giò trận 3"},
+    {t:"🔥","n":"Thắng tối thiểu Panama 1-0 ở lượt 2 nhờ Budimir (54') — trọn 3 điểm dù chưa thực sự thuyết phục"},
+    {t:"📋","n":"Modrić vẫn cầm nhịp, Croatia rộng cửa đi tiếp sau khi hạ Panama"},
   ],
   "Panama":[
-    {t:"⚠️","n":"Thua 0-1 trước Ghana — bị áp đảo về tốc độ và kỹ thuật"},
-    {t:"📋","n":"HLV Christiansen sẽ dùng sơ đồ 5-3-2 thủ chắc hơn để hy vọng có điểm"},
+    {t:"💔","n":"Thua Croatia 0-1 (Budimir 54') ở lượt 2 — chơi kiên cường nhưng thiếu sắc bén"},
+    {t:"⚠️","n":"Thua cả 2 lượt, cơ hội đi tiếp gần như đã hết trước lượt cuối"},
   ],
   "Bỉ":[
     {t:"📋","n":"Hòa Iran 0-0 ở lượt 2 (có pha bị từ chối bàn vì VAR) — 2 điểm sau 2 trận hòa liên tiếp"},
