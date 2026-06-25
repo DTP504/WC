@@ -1258,6 +1258,7 @@ function renderPredictions(){
           ${playedBadge?`<div style="margin-bottom:8px;">${playedBadge}</div>`:''}
           ${predBar}
           ${capChart}
+          ${realFormPairHtml(tA,tB)}
           <div class="pred-explain">
             ${explainHtml}
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -1601,6 +1602,122 @@ const PREMATCH_NEWS={
     {t:"⚠️","n":"Lượt 3 gặp Bỉ: cần thắng đậm và trông chờ kết quả thuận lợi mới có cơ hội mong manh"},
   ],
 };
+
+// ─────────────────────────────────────────────────────────────────────────
+// PHONG ĐỘ THỰC CHẤT (Real Form) — xG THẬT từ SofaScore (lấy 25/06/2026)
+// Phương pháp (thang 10): Base kết quả (tối đa 5) + Hiệu suất xG (tối đa 3) + Lịch đấu/SoS (tối đa 2).
+// • gf/ga = bàn THẬT của ĐỘI (đã quy về góc nhìn đội, không phải home/away).
+// • xgf/xga = xG THẬT của đội / của đối thủ (nguồn: api.sofascore.com .../statistics). null = SofaScore không track.
+// • oppRank = hạng FIFA xấp xỉ của đối thủ — chỉ dùng cho SoS (ƯỚC LƯỢNG, không phải số chính thức).
+// 5 trận thật gần nhất mỗi đội, mới→cũ. (Khác FORM5 mô phỏng phía trên — đây là trận CÓ THẬT.)
+const REAL_FORM = {
+  "Mexico":[
+    {opp:"Panama",       res:"W", gf:1, ga:0, xgf:1.05, xga:0.07, oppRank:31},
+    {opp:"Paraguay",     res:"W", gf:2, ga:1, xgf:2.52, xga:2.23, oppRank:40},
+    {opp:"Uruguay",      res:"D", gf:0, ga:0, xgf:0.50, xga:0.18, oppRank:15},
+    {opp:"Ecuador",      res:"D", gf:1, ga:1, xgf:1.38, xga:1.00, oppRank:23},
+    {opp:"Colombia",     res:"W", gf:4, ga:0, xgf:1.39, xga:0.83, oppRank:14},
+  ],
+  "Hàn Quốc":[
+    {opp:"Mexico",       res:"D", gf:2, ga:2, xgf:0.99, xga:1.02, oppRank:13},
+    {opp:"Mỹ",           res:"W", gf:2, ga:0, xgf:0.76, xga:2.87, oppRank:16},
+    {opp:"Nhật Bản",     res:"L", gf:0, ga:1, xgf:0.97, xga:0.55, oppRank:17},
+    {opp:"Hong Kong",    res:"W", gf:2, ga:0, xgf:2.25, xga:0.26, oppRank:153},
+    {opp:"Trung Quốc",   res:"W", gf:3, ga:0, xgf:2.19, xga:0.19, oppRank:90},
+  ],
+  "CH Séc":[
+    {opp:"Croatia",      res:"D", gf:0, ga:0, xgf:0.70, xga:0.69, oppRank:10},
+    {opp:"Saudi Arabia", res:"D", gf:1, ga:1, xgf:1.26, xga:0.57, oppRank:58},
+    {opp:"Montenegro",   res:"W", gf:2, ga:0, xgf:2.06, xga:1.39, oppRank:70},
+    {opp:"Croatia",      res:"L", gf:1, ga:5, xgf:1.68, xga:3.62, oppRank:10},
+    {opp:"Montenegro",   res:"W", gf:2, ga:0, xgf:1.06, xga:1.29, oppRank:70},
+  ],
+  // ⚠ Nam Phi: SofaScore KHÔNG track xG cho vòng loại CAF/AFCON → 4/5 trận thiếu xG (xgf=null).
+  "Nam Phi":[
+    {opp:"Angola",       res:"W", gf:2, ga:1, xgf:null, xga:null, oppRank:80},
+    {opp:"Zambia",       res:"W", gf:3, ga:1, xgf:0.96, xga:0.24, oppRank:88},
+    {opp:"Rwanda",       res:"W", gf:3, ga:0, xgf:null, xga:null, oppRank:135},
+    {opp:"Nigeria",      res:"D", gf:1, ga:1, xgf:null, xga:null, oppRank:44},
+    {opp:"Lesotho",      res:"W", gf:3, ga:0, xgf:null, xga:null, oppRank:150},
+  ],
+};
+
+function realFormScore(team){
+  const ms=REAL_FORM[team]; if(!ms||!ms.length) return null;
+  const n=ms.length;
+  // Base (tối đa 5): W=1, D=0.5, L=0 → trung bình × 5
+  let wpts=0; ms.forEach(m=> wpts += m.res==='W'?1:m.res==='D'?0.5:0);
+  const base=wpts/n*5;
+  // Hiệu suất xG (tối đa 3): từ hiệu số xG TB; chỉ tính trận có xG. diff≥+1→3đ, diff=0→1.5đ, diff≤−1→0đ
+  const xgMs=ms.filter(m=> m.xgf!=null && m.xga!=null);
+  let xgPts=null, xgDiff=null;
+  if(xgMs.length){
+    let d=0; xgMs.forEach(m=> d += (m.xgf-m.xga)); xgDiff=d/xgMs.length;
+    xgPts=Math.max(0,Math.min(3, 1.5+1.5*xgDiff));
+  }
+  // SoS (tối đa 2): hạng FIFA TB của đối thủ. rank≤25→2đ, rank≥100→0đ
+  let r=0; ms.forEach(m=> r+=m.oppRank); const avgRank=r/n;
+  const sos=Math.max(0,Math.min(2, 2*(100-avgRank)/75));
+  const complete = xgMs.length===n;          // đủ xG cả 5 trận?
+  const total = complete ? base+xgPts+sos : null; // thiếu xG → không chấm "thực chất"
+  const naive = wpts/n*10;                    // điểm "ngây thơ" = chỉ nhìn kết quả, quy về 10
+  return {n, base, xgPts, xgDiff, xgCover:xgMs.length, sos, avgRank, complete, total, naive,
+          rec:`${ms.filter(m=>m.res==='W').length}T ${ms.filter(m=>m.res==='D').length}H ${ms.filter(m=>m.res==='L').length}B`};
+}
+
+// Một dải phong độ cho 1 đội (dùng bên trong card từng cặp đấu). '' nếu đội không có REAL_FORM.
+function realFormBarHtml(team){
+  const s=realFormScore(team); if(!s) return '';
+  const COL_BASE='#5b8def', COL_XG='#3dd9b3', COL_XGNEG='#e07870', COL_SOS='#facc15';
+  const pct=v=>Math.max(0,Math.min(100,v/10*100));
+  const xgCol=(s.xgDiff!=null && s.xgDiff<0)?COL_XGNEG:COL_XG;
+  const baseW=pct(s.base), xgW=s.complete?pct(s.xgPts):0, sosW=pct(s.sos), naiveL=pct(s.naive);
+  const bar=`<div style="position:relative;height:22px;background:var(--border);border-radius:6px;overflow:hidden;display:flex;">
+      <div style="width:${baseW}%;background:${COL_BASE};"></div>
+      <div style="width:${xgW}%;background:${xgCol};"></div>
+      <div style="width:${sosW}%;background:${COL_SOS};"></div>
+      ${!s.complete?`<div style="width:${pct(3)}%;background:repeating-linear-gradient(45deg,var(--text-dim),var(--text-dim) 4px,transparent 4px,transparent 8px);opacity:.4;"></div>`:''}
+      <div title="Phong độ ngây thơ (chỉ kết quả): ${s.naive.toFixed(1)}/10" style="position:absolute;top:-2px;bottom:-2px;left:${naiveL}%;width:2px;background:var(--text);opacity:.85;"></div>
+    </div>`;
+  const totLabel = s.complete
+    ? `<b style="font-size:16px;color:var(--text);">${s.total.toFixed(1)}</b><span style="font-size:10px;color:var(--text-secondary);">/10</span>`
+    : `<b style="font-size:12.5px;color:var(--negative);">thiếu xG</b>`;
+  const xgTxt = s.xgDiff!=null
+    ? `xG ${s.complete?s.xgPts.toFixed(1):'?'}<span style="color:var(--text-dim);">(${s.xgDiff>=0?'+':''}${s.xgDiff.toFixed(2)}/trận${s.complete?'':`, chỉ ${s.xgCover}/${s.n}`})</span>`
+    : `xG <span style="color:var(--negative);">không có</span>`;
+  const detail=`Base ${s.base.toFixed(1)} <span style="color:var(--text-dim);">(${s.rec})</span> · ${xgTxt} · Lịch ${s.sos.toFixed(1)} <span style="color:var(--text-dim);">(rank ${Math.round(s.avgRank)})</span>`;
+  const gap = s.complete ? (s.total-s.naive) : null;
+  const gapBadge = gap!=null
+    ? `<span style="font-size:10.5px;color:${gap<-0.05?'var(--negative)':gap>0.05?'var(--positive)':'var(--text-secondary)'};">ngây thơ ${s.naive.toFixed(1)} → ${gap>=0?'+':''}${gap.toFixed(1)}</span>`
+    : `<span style="font-size:10.5px;color:var(--text-secondary);">ngây thơ ${s.naive.toFixed(1)}</span>`;
+  const matchRows=REAL_FORM[team].map(m=>{
+    const rc=m.res==='W'?'var(--positive)':m.res==='L'?'var(--negative)':'var(--text-dim)';
+    const xg=(m.xgf!=null)?`xG ${m.xgf.toFixed(2)}–${m.xga.toFixed(2)}`:`<span style="color:var(--text-dim);">xG n/a</span>`;
+    return `<div style="display:flex;gap:8px;font-size:11px;padding:1px 0;"><span style="color:${rc};width:14px;font-weight:700;">${m.res}</span><span style="flex:1;">vs ${m.opp} <b>${m.gf}–${m.ga}</b></span><span style="color:var(--text-secondary);">${xg}</span></div>`;
+  }).join('');
+  return `<div style="margin-bottom:9px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:10px;">
+      <span><b style="font-size:12.5px;">${team}</b> &nbsp;${gapBadge}</span>
+      <span>${totLabel}</span>
+    </div>
+    ${bar}
+    <div style="font-size:10.5px;color:var(--c-body);margin-top:4px;line-height:1.55;">${detail}</div>
+    <details style="margin-top:2px;"><summary style="font-size:10px;color:var(--accent);cursor:pointer;">5 trận thật (SofaScore)</summary><div style="margin-top:3px;">${matchRows}</div></details>
+  </div>`;
+}
+
+// Khối "Phong độ thực chất" cho 1 cặp đấu — gắn trong card từng trận. '' nếu cả 2 đội đều chưa có REAL_FORM.
+function realFormPairHtml(tA,tB){
+  const ha=realFormBarHtml(tA), hb=realFormBarHtml(tB);
+  if(!ha && !hb) return '';
+  const sA=realFormScore(tA), sB=realFormScore(tB);
+  const incomplete=(sA&&!sA.complete)||(sB&&!sB.complete);
+  return `<div style="background:rgba(61,217,179,.045);border:1px solid rgba(61,217,179,.14);border-radius:10px;padding:8px 10px 6px;margin-top:8px;">
+      <div style="font-size:10.5px;color:#3dd9b3;font-weight:700;margin-bottom:7px;padding:0 2px;">🔬 Phong độ thực chất <span style="font-weight:500;color:var(--c-muted);">(xG THẬT/SofaScore · <span style="color:#5b8def;">Base</span>≤5 + <span style="color:#3dd9b3;">xG</span>≤3 + <span style="color:#facc15;">Lịch</span>≤2 · vạch dọc = chỉ tính KQ)</span></div>
+      ${ha}${hb}
+      <div style="font-size:10px;color:var(--text-secondary);padding:2px 2px 0;line-height:1.5;">SoS suy từ hạng FIFA xấp xỉ (ước lượng).${incomplete?' ⚠ Đội thiếu xG (SofaScore không track vòng loại CAF) → không chấm tổng, dải sọc = phần xG khuyết.':''}</div>
+    </div>`;
+}
 
 // Initial render — called here so SQUAD & FORM5 are fully defined
 refresh();
