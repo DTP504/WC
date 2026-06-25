@@ -481,8 +481,8 @@ const FORM = {
 };
 
 const RESULTS = {
-  "Mexico":[["Nam Phi",2,0,"W"],["Hàn Quốc",1,0,"W"]],"Nam Phi":[["Mexico",0,2,"L"],["CH Séc",1,1,"D"]],
-  "Hàn Quốc":[["CH Séc",2,1,"W"],["Mexico",0,1,"L"]],"CH Séc":[["Hàn Quốc",1,2,"L"],["Nam Phi",1,1,"D"]],
+  "Mexico":[["Nam Phi",2,0,"W"],["Hàn Quốc",1,0,"W"],["CH Séc",3,0,"W"]],"Nam Phi":[["Mexico",0,2,"L"],["CH Séc",1,1,"D"],["Hàn Quốc",1,0,"W"]],
+  "Hàn Quốc":[["CH Séc",2,1,"W"],["Mexico",0,1,"L"],["Nam Phi",0,1,"L"]],"CH Séc":[["Hàn Quốc",1,2,"L"],["Nam Phi",1,1,"D"],["Mexico",0,3,"L"]],
   "Canada":[["Bosnia & Herzegovina",1,1,"D"],["Qatar",6,0,"W"],["Thụy Sỹ",1,2,"L"]],"Bosnia & Herzegovina":[["Canada",1,1,"D"],["Thụy Sỹ",1,4,"L"],["Qatar",3,1,"W"]],
   "Mỹ":[["Paraguay",4,1,"W"],["Australia",2,0,"W"]],"Paraguay":[["Mỹ",1,4,"L"],["Thổ Nhĩ Kỳ",1,0,"W"]],
   "Qatar":[["Thụy Sỹ",1,1,"D"],["Canada",0,6,"L"],["Bosnia & Herzegovina",1,3,"L"]],"Thụy Sỹ":[["Qatar",1,1,"D"],["Bosnia & Herzegovina",4,1,"W"],["Canada",2,1,"W"]],
@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='25/06/2026 — lượt 3: bảng B,C đã xong (4/6 KQ); bảng A (CH Séc–Mexico, Nam Phi–HQ) chờ đá';
+if(_lu) _lu.textContent='25/06/2026 — lượt 3: bảng A,B,C đã xong (6 KQ: CH Séc 0–3 Mexico, Nam Phi 1–0 HQ + B,C); kèo bet365 bảng D,E,F chờ đá rạng sáng 26/06 (Paraguay–Úc, Thổ Nhĩ Kỳ–Mỹ, Curaçao–BBN, Ecuador–Đức, Nhật–Thụy Điển, Tunisia–Hà Lan)';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -546,11 +546,14 @@ function refresh(){
 }
 
 // ── Lịch lượt 3 vòng bảng (key "home|away" theo đúng chiều bet365/gibot) ──
-// Cập nhật dần theo các bảng có kèo. Hiện có bảng A, B, C (6 trận).
+// Cập nhật dần theo các bảng có kèo. Hiện có bảng A, B, C, D, E, F (11 trận).
 const FIXTURES=[
   ["A","CH Séc","Mexico"],["A","Nam Phi","Hàn Quốc"],
   ["B","Bosnia & Herzegovina","Qatar"],["B","Thụy Sỹ","Canada"],
   ["C","Morocco","Haiti"],["C","Scotland","Brazil"],
+  ["D","Paraguay","Australia"],["D","Thổ Nhĩ Kỳ","Mỹ"],
+  ["E","Curacao","Bờ Biển Ngà"],["E","Ecuador","Đức"],
+  ["F","Nhật Bản","Thụy Điển"],["F","Tunisia","Hà Lan"],
 ];
 
 // ── Kho TÍCH LŨY kết quả mọi trận đã đá qua các lượt (key: "home|away", value: [gf,ga]) ──
@@ -589,14 +592,23 @@ const PLAYED_R2 = {
   "Thụy Sỹ|Canada": [2,1],
   "Morocco|Haiti": [4,2],
   "Scotland|Brazil": [0,3],
+  // Lượt 3 bảng A (25/06/2026 — đã xong, xác minh ESPN)
+  "CH Séc|Mexico": [0,3],
+  "Nam Phi|Hàn Quốc": [1,0],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
 // Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
 // Lượt 3 — lấy từ gibot.top ngày 24/06/2026 (trận #49–#54).
 const HANDICAP_GIBOT = {
-  "CH Séc|Mexico": 0.5,            // gibot: Mexico (P) chấp 0.5
-  "Nam Phi|Hàn Quốc": 1.0,         // gibot: Hàn Quốc (P) chấp 1.0
+  // Bảng A đã đá xong 25/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
+  // Lượt 3 — gibot.top ngày 25/06/2026 (trận #55–#60)
+  "Paraguay|Australia": -0.5,      // gibot: Paraguay (T) chấp 0.5
+  "Thổ Nhĩ Kỳ|Mỹ": 0.5,           // gibot: USA (P) chấp 0.5
+  "Curacao|Bờ Biển Ngà": 2.5,      // gibot: Ivory Coast (P) chấp 2.5
+  "Ecuador|Đức": 1.0,              // gibot: Germany (P) chấp 1.0
+  "Nhật Bản|Thụy Điển": -0.5,      // gibot: Japan (T) chấp 0.5
+  "Tunisia|Hà Lan": 2.5,           // gibot: Netherlands (P) chấp 2.5
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -609,6 +621,9 @@ const HANDICAP_GIBOT_HISTORY = {
   "Thụy Sỹ|Canada": -0.5,
   "Morocco|Haiti": -2.0,
   "Scotland|Brazil": 2.0,
+  // Lượt 3 bảng A (25/06/2026 — đã xong)
+  "CH Séc|Mexico": 0.5,
+  "Nam Phi|Hàn Quốc": 1.0,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -626,15 +641,39 @@ const HANDICAP_GIBOT_HISTORY = {
 //     {line:-1.5, oddsFav:2.60, oddsUnd:1.48},
 //   ]}
 const BET365_ODDS = {
-  // ── Lượt 3 vòng bảng — kèo bet365 ngày 24/06/2026 (chỉ lấy mốc bán nguyên "sạch") ──
-  // Bảng A
-  "CH Séc|Mexico": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.950, oddsUnd:1.900},
-    {line:-1.5, oddsFav:3.450, oddsUnd:1.300},
+  // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
+  // Bảng A đã đá xong 25/06 → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
+  // Bảng D, E, F — kèo bet365 ngày 25/06/2026
+  "Paraguay|Australia": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.850, oddsUnd:1.400},
+    {line:-1.5, oddsFav:6.400, oddsUnd:1.115},
   ]},
-  "Nam Phi|Hàn Quốc": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.625, oddsUnd:2.250},
-    {line:-1.5, oddsFav:2.750, oddsUnd:1.425},
+  "Thổ Nhĩ Kỳ|Mỹ": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
+    {line:-1.5, oddsFav:3.300, oddsUnd:1.325},
+    {line:-2.5, oddsFav:6.800, oddsUnd:1.105},
+  ]},
+  "Curacao|Bờ Biển Ngà": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
+    {line:-1.5, oddsFav:1.450, oddsUnd:2.675},
+    {line:-2.5, oddsFav:2.200, oddsUnd:1.650},
+    {line:-3.5, oddsFav:3.700, oddsUnd:1.260},
+  ]},
+  "Ecuador|Đức": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
+    {line:-1.5, oddsFav:2.375, oddsUnd:1.550},
+    {line:-2.5, oddsFav:4.400, oddsUnd:1.200},
+  ]},
+  "Nhật Bản|Thụy Điển": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
+    {line:-1.5, oddsFav:3.100, oddsUnd:1.350},
+    {line:-2.5, oddsFav:6.600, oddsUnd:1.110},
+  ]},
+  "Tunisia|Hà Lan": {fav:'B', ladder:[
+    {line:-1.5, oddsFav:1.325, oddsUnd:3.300},
+    {line:-2.5, oddsFav:1.900, oddsUnd:1.950},
+    {line:-3.5, oddsFav:3.000, oddsUnd:1.375},
+    {line:-4.5, oddsFav:5.500, oddsUnd:1.150},
   ]},
 };
 
@@ -671,6 +710,38 @@ const BET365_ODDS_HISTORY = {
     {line:-0.5, oddsFav:1.300, oddsUnd:3.450},
     {line:-1.5, oddsFav:2.000, oddsUnd:1.850},
     {line:-2.5, oddsFav:3.450, oddsUnd:1.300},
+  ]},
+  // Bảng D, E, F (25/06/2026)
+  "Paraguay|Australia": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.850, oddsUnd:1.400},
+    {line:-1.5, oddsFav:6.400, oddsUnd:1.115},
+  ]},
+  "Thổ Nhĩ Kỳ|Mỹ": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
+    {line:-1.5, oddsFav:3.300, oddsUnd:1.325},
+    {line:-2.5, oddsFav:6.800, oddsUnd:1.105},
+  ]},
+  "Curacao|Bờ Biển Ngà": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
+    {line:-1.5, oddsFav:1.450, oddsUnd:2.675},
+    {line:-2.5, oddsFav:2.200, oddsUnd:1.650},
+    {line:-3.5, oddsFav:3.700, oddsUnd:1.260},
+  ]},
+  "Ecuador|Đức": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
+    {line:-1.5, oddsFav:2.375, oddsUnd:1.550},
+    {line:-2.5, oddsFav:4.400, oddsUnd:1.200},
+  ]},
+  "Nhật Bản|Thụy Điển": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
+    {line:-1.5, oddsFav:3.100, oddsUnd:1.350},
+    {line:-2.5, oddsFav:6.600, oddsUnd:1.110},
+  ]},
+  "Tunisia|Hà Lan": {fav:'B', ladder:[
+    {line:-1.5, oddsFav:1.325, oddsUnd:3.300},
+    {line:-2.5, oddsFav:1.900, oddsUnd:1.950},
+    {line:-3.5, oddsFav:3.000, oddsUnd:1.375},
+    {line:-4.5, oddsFav:5.500, oddsUnd:1.150},
   ]},
 };
 
@@ -1073,7 +1144,7 @@ function renderPredictionStatsBet365(){
   });
   el.innerHTML=`<div class="card">
     <h3 style="margin-bottom:2px;">📈 Độ chính xác dự đoán theo kèo Bet365</h3>
-    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#5b8def;">Kèo chấp Bet365</b>: dự đoán đội được chấp <b>thắng kèo</b> (đối chiếu theo đường kèo gibot — hoà kèo tính riêng). Tổng <b>${s.total}</b> trận có lưu kèo bet365.</div>
+    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#5b8def;">Kèo chấp Bet365</b>: dự đoán theo xác suất kèo bet365 tại đường gibot (hoà kèo tính riêng). Chỉ chấm <b>trận ĐÃ ĐÁ</b> có lưu kèo — hiện <b>${s.total}</b> trận (các trận chưa đá đã có kèo sẽ tự được tính khi có kết quả).</div>
     <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
       <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
         <svg viewBox="0 0 120 120" style="width:120px;height:120px;">${arcs}</svg>
@@ -1083,12 +1154,12 @@ function renderPredictionStatsBet365(){
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;min-width:190px;flex:1;">
-        ${_statLegend('var(--accent2)','✅ Đoán đúng đội được chấp thắng',s.ok)}
-        ${_statLegend('var(--text-dim)','🤝 Trận hòa',s.draw)}
-        ${_statLegend('var(--negative)','❌ Bất ngờ (đội nhận chấp thắng)',s.upset)}
+        ${_statLegend('var(--accent2)','✅ Đoán đúng đội thắng kèo',s.ok)}
+        ${_statLegend('var(--text-dim)','🤝 Hoà kèo (push)',s.draw)}
+        ${_statLegend('var(--negative)','❌ Đoán sai (đội kia thắng kèo)',s.upset)}
       </div>
     </div>
-    ${s.wrong.length?`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;font-size:11.5px;color:var(--text-secondary);line-height:1.8;"><b style="color:var(--c-body);">Các trận kèo đoán trật:</b><br>${s.wrong.map(w=>`${w.tA} ${w.ga}–${w.gb} ${w.tB} <span style="color:var(--text-dim);">(dự đoán ${w.fav}${w.kind==='draw'?' được chấp → thực ra hòa':' được chấp → nhận chấp thắng'})</span>`).join('<br>')}</div>`:''}
+    ${s.wrong.length?`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;font-size:11.5px;color:var(--text-secondary);line-height:1.8;"><b style="color:var(--c-body);">Các trận kèo đoán trật:</b><br>${s.wrong.map(w=>`${w.tA} ${w.ga}–${w.gb} ${w.tB} <span style="color:var(--text-dim);">(dự đoán ${w.fav} thắng kèo → ${w.kind==='draw'?'thực ra hoà kèo':'đối thủ thắng kèo'})</span>`).join('<br>')}</div>`:''}
   </div>`;
 }
 
@@ -1259,6 +1330,7 @@ function renderPredictions(){
           ${predBar}
           ${capChart}
           ${realFormPairHtml(tA,tB)}
+          ${coachImpactPairHtml(tA,tB)}
           <div class="pred-explain">
             ${explainHtml}
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -1410,20 +1482,20 @@ const FORM5={
 // Sự kiện nổi bật trước trận lượt 2 (icon · nội dung)
 const PREMATCH_NEWS={
   "Mexico":[
-    {t:"🔥","n":"Thắng tiếp Hàn Quốc 1-0 ở lượt 2, toàn thắng 2 trận, sớm vào vòng 1/8"},
-    {t:"⚠️","n":"Edson Álvarez đã nhận thẻ vàng lượt 1, cần tránh thẻ phạt trước lượt 3"},
+    {t:"🏆","n":"Thắng CH Séc 3-0 ở lượt 3 (Chávez 55', Quiñones 61', Fidalgo 90'+4') — toàn thắng 3/3, nhất bảng A"},
+    {t:"📋","n":"9 điểm, GD +6 — vào vòng 1/8 với phong độ hoàn hảo"},
   ],
   "Hàn Quốc":[
-    {t:"💔","n":"Thua Mexico 0-1 ở lượt 2 sau khi thắng CH Séc, cần thắng lượt 3 để rộng đường đi tiếp"},
-    {t:"📋","n":"HLV Hong cần tính toán lại nhân sự, có thể đổi sơ đồ trước trận quyết định"},
+    {t:"💔","n":"Thua Nam Phi 0-1 ở lượt 3 (Maseko 63') — dừng bước ở vòng bảng"},
+    {t:"📋","n":"3 điểm, hạng 3 bảng A, GD -1 — bị loại đáng tiếc sau khởi đầu thắng CH Séc"},
   ],
   "Nam Phi":[
-    {t:"💔","n":"Percy Tau chấn thương cơ đùi nhẹ sau lượt 1, khả năng ra sân còn chờ xác nhận"},
-    {t:"⚠️","n":"Cần ít nhất 1 điểm để không sớm bị loại sau thất bại 0-2 trước Mexico"},
+    {t:"🔥","n":"Thắng Hàn Quốc 1-0 ở lượt 3 (Maseko 63') — lần đầu tiên vào vòng knock-out World Cup"},
+    {t:"📋","n":"4 điểm, nhì bảng A — vượt qua vòng bảng lịch sử"},
   ],
   "CH Séc":[
-    {t:"🔥","n":"Patrik Schick trở lại sau 3 tuần nghỉ chấn thương, dự kiến đá như tiền đạo dự bị"},
-    {t:"⚠️","n":"Thất bại 1-2 trước Hàn Quốc — bắt buộc phải thắng để còn hy vọng đi tiếp"},
+    {t:"💔","n":"Thua Mexico 0-3 ở lượt 3 — kết thúc vòng bảng với chỉ 1 điểm, bị loại"},
+    {t:"📋","n":"GD -4, cuối bảng A (chỉ có trận hòa Nam Phi) — sớm về nước"},
   ],
   "Canada":[
     {t:"💔","n":"Thua Thụy Sỹ 1-2 ở lượt 3 — Jonathan David rút ngắn phút 76 nhưng không lật ngược thế cờ"},
@@ -1716,6 +1788,100 @@ function realFormPairHtml(tA,tB){
       <div style="font-size:10.5px;color:#3dd9b3;font-weight:700;margin-bottom:7px;padding:0 2px;">🔬 Phong độ thực chất <span style="font-weight:500;color:var(--c-muted);">(xG THẬT/SofaScore · <span style="color:#5b8def;">Base</span>≤5 + <span style="color:#3dd9b3;">xG</span>≤3 + <span style="color:#facc15;">Lịch</span>≤2 · vạch dọc = chỉ tính KQ)</span></div>
       ${ha}${hb}
       <div style="font-size:10px;color:var(--text-secondary);padding:2px 2px 0;line-height:1.5;">SoS suy từ hạng FIFA xấp xỉ (ước lượng).${incomplete?' ⚠ Đội thiếu xG (SofaScore không track vòng loại CAF) → không chấm tổng, dải sọc = phần xG khuyết.':''}</div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// LƯỢNG HÓA CON NGƯỜI — ĐẲNG CẤP HLV qua 4 tiêu chí (proxy metrics)
+// Trọng số: Pedigree 30% · Overachieving 30% · In-game 20% · Man-mgmt 20% → tổng /10.
+// • ped (Pedigree, 0–10): kinh nghiệm/bản lĩnh đá cúp — chấm từ DANH HIỆU & thành tích knock-out CÓ THẬT
+//   (WC/Euro/Copa/AFCON/Asian Cup/cúp châu lục/league lớn). Nguồn: hồ sơ HLV (kiến thức tới 01/2026). 🟢 có cơ sở
+// • over (Overachieving): TỰ TÍNH từ dữ liệu thật trong dashboard — so hạng giá trị đội hình (val) với hạng FIFA.
+//   FIFA tốt hơn nhiều so với giá trị → HLV ép ra kết quả vượt tài nguyên. 🟢 dữ liệu thật, không lưu cứng.
+// • ing (In-game, 0–10) & man (Man-mgmt, 0–10): proxy lý tưởng (points-from-losing, sub-impact, sentiment)
+//   KHÔNG lấy tự động được (Transfermarkt/FBref bị chặn; Understat không có ĐTQG; sentiment cần Twitter API).
+//   → ƯỚC LƯỢNG theo hiểu biết, gắn nhãn 🟡. Sửa số trong bảng dưới nếu muốn.
+const COACH_IMPACT = {
+  // Bảng A
+  "Mexico":{ped:6,ing:7,man:7}, "Nam Phi":{ped:8,ing:6,man:7}, "Hàn Quốc":{ped:6,ing:6,man:7}, "CH Séc":{ped:3,ing:5,man:5},
+  // Bảng B
+  "Canada":{ped:5,ing:7,man:7}, "Bosnia & Herzegovina":{ped:3,ing:5,man:5}, "Qatar":{ped:7,ing:7,man:6}, "Thụy Sỹ":{ped:6,ing:7,man:6},
+  // Bảng C
+  "Brazil":{ped:10,ing:9,man:10}, "Morocco":{ped:4,ing:6,man:6}, "Haiti":{ped:3,ing:5,man:5}, "Scotland":{ped:5,ing:6,man:7},
+  // Bảng D
+  "Mỹ":{ped:7,ing:8,man:8}, "Paraguay":{ped:6,ing:7,man:7}, "Australia":{ped:6,ing:6,man:7}, "Thổ Nhĩ Kỳ":{ped:6,ing:7,man:6},
+  // Bảng E
+  "Đức":{ped:7,ing:9,man:8}, "Curacao":{ped:8,ing:7,man:7}, "Bờ Biển Ngà":{ped:7,ing:6,man:7}, "Ecuador":{ped:5,ing:7,man:6},
+  // Bảng F
+  "Hà Lan":{ped:7,ing:7,man:7}, "Nhật Bản":{ped:6,ing:7,man:8}, "Thụy Điển":{ped:5,ing:8,man:7}, "Tunisia":{ped:4,ing:6,man:6},
+  // Bảng G
+  "Bỉ":{ped:6,ing:7,man:6}, "Ai Cập":{ped:4,ing:6,man:7}, "Iran":{ped:5,ing:6,man:6}, "New Zealand":{ped:3,ing:5,man:5},
+  // Bảng H
+  "Tây Ban Nha":{ped:8,ing:8,man:8}, "Cape Verde":{ped:4,ing:6,man:7}, "Saudi Arabia":{ped:8,ing:7,man:8}, "Uruguay":{ped:6,ing:8,man:6},
+  // Bảng I
+  "Pháp":{ped:10,ing:8,man:9}, "Senegal":{ped:4,ing:6,man:6}, "Iraq":{ped:5,ing:6,man:6}, "Na Uy":{ped:6,ing:6,man:7},
+  // Bảng J
+  "Argentina":{ped:10,ing:9,man:9}, "Algeria":{ped:6,ing:6,man:6}, "Áo":{ped:6,ing:9,man:7}, "Jordan":{ped:6,ing:6,man:7},
+  // Bảng K
+  "Bồ Đào Nha":{ped:7,ing:7,man:7}, "CHDC Congo":{ped:5,ing:6,man:6}, "Uzbekistan":{ped:5,ing:6,man:6}, "Colombia":{ped:6,ing:7,man:8},
+  // Bảng L
+  "Anh":{ped:9,ing:9,man:7}, "Croatia":{ped:8,ing:7,man:8}, "Ghana":{ped:6,ing:6,man:6}, "Panama":{ped:5,ing:6,man:7},
+};
+const CI_W={ped:0.30, over:0.30, ing:0.20, man:0.20};
+
+let _ciRanks=null;
+function ciRankMaps(){
+  if(_ciRanks) return _ciRanks;
+  const vR={}, fR={};
+  [...DATA].sort((a,b)=>b.val-a.val).forEach((d,i)=>vR[d.team]=i+1);   // hạng giá trị đội hình (1=cao nhất)
+  [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>fR[d.team]=i+1); // hạng điểm FIFA (1=cao nhất)
+  _ciRanks={vR,fR}; return _ciRanks;
+}
+// Overachieving (0–10): hạng giá trị − hạng FIFA. >0 = kết quả (FIFA) tốt hơn tài nguyên (value) → vượt trần.
+function ciOverScore(team){
+  const {vR,fR}=ciRankMaps();
+  if(vR[team]==null||fR[team]==null) return null;
+  const gap=vR[team]-fR[team];
+  return {val:Math.max(0,Math.min(10, 5+gap/4)), gap, vR:vR[team], fR:fR[team]};
+}
+function coachImpactScore(team){
+  const ci=COACH_IMPACT[team]; if(!ci) return null;
+  const ov=ciOverScore(team); if(!ov) return null;
+  const total = CI_W.ped*ci.ped + CI_W.over*ov.val + CI_W.ing*ci.ing + CI_W.man*ci.man;
+  const name=(typeof COACH!=='undefined'&&COACH[team])?COACH[team][0]:'';
+  return {ped:ci.ped, over:ov.val, ing:ci.ing, man:ci.man, total, name, gap:ov.gap, vR:ov.vR, fR:ov.fR};
+}
+
+function coachImpactBarHtml(team){
+  const s=coachImpactScore(team); if(!s) return '';
+  const C_PED='#a78bfa', C_OVR='#34d399', C_ING='#fb923c', C_MAN='#60a5fa';
+  const pct=v=>Math.max(0,Math.min(100,v/10*100));
+  // đóng góp đã nhân trọng số (max: 3/3/2/2)
+  const cPed=CI_W.ped*s.ped, cOvr=CI_W.over*s.over, cIng=CI_W.ing*s.ing, cMan=CI_W.man*s.man;
+  const bar=`<div style="position:relative;height:22px;background:var(--border);border-radius:6px;overflow:hidden;display:flex;">
+      <div style="width:${pct(cPed)}%;background:${C_PED};"></div>
+      <div style="width:${pct(cOvr)}%;background:${C_OVR};"></div>
+      <div style="width:${pct(cIng)}%;background:${C_ING};"></div>
+      <div style="width:${pct(cMan)}%;background:${C_MAN};"></div>
+    </div>`;
+  const ovrTxt=`Vượt trần ${s.over.toFixed(1)} <span style="color:var(--text-dim);">(value #${s.vR} ${s.gap>0?'→ FIFA tốt hơn':s.gap<0?'→ FIFA kém hơn':'≈'} FIFA #${s.fR})</span>`;
+  const detail=`Pedigree ${s.ped} 🟢 · ${ovrTxt} 🟢 · In-game ${s.ing} 🟡 · Man-mgmt ${s.man} 🟡`;
+  return `<div style="margin-bottom:9px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:10px;">
+      <span><b style="font-size:12.5px;">${team}</b> <span style="font-size:10.5px;color:var(--text-secondary);">${s.name}</span></span>
+      <span><b style="font-size:16px;color:var(--text);">${s.total.toFixed(1)}</b><span style="font-size:10px;color:var(--text-secondary);">/10</span></span>
+    </div>
+    ${bar}
+    <div style="font-size:10.5px;color:var(--c-body);margin-top:4px;line-height:1.55;">${detail}</div>
+  </div>`;
+}
+function coachImpactPairHtml(tA,tB){
+  const ha=coachImpactBarHtml(tA), hb=coachImpactBarHtml(tB);
+  if(!ha && !hb) return '';
+  return `<div style="background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.16);border-radius:10px;padding:8px 10px 6px;margin-top:8px;">
+      <div style="font-size:10.5px;color:#a78bfa;font-weight:700;margin-bottom:7px;padding:0 2px;">👔 Đẳng cấp HLV <span style="font-weight:500;color:var(--c-muted);">(<span style="color:#a78bfa;">Pedigree</span> 30% + <span style="color:#34d399;">Vượt trần</span> 30% + <span style="color:#fb923c;">In-game</span> 20% + <span style="color:#60a5fa;">Man-mgmt</span> 20%)</span></div>
+      ${ha}${hb}
+      <div style="font-size:10px;color:var(--text-secondary);padding:2px 2px 0;line-height:1.5;">🟢 Pedigree (danh hiệu/knock-out có thật) & Vượt trần (giá trị đội hình vs hạng FIFA — dữ liệu thật). 🟡 In-game & Man-mgmt = ước lượng (Transfermarkt/FBref bị chặn, sentiment cần Twitter API).</div>
     </div>`;
 }
 
