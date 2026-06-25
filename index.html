@@ -599,6 +599,18 @@ const HANDICAP_GIBOT = {
   "Nam Phi|Hàn Quốc": 1.0,         // gibot: Hàn Quốc (P) chấp 1.0
 };
 
+// ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
+// Cấu trúc = HANDICAP_GIBOT. Khi xóa 1 trận khỏi HANDICAP_GIBOT (sau khi đá xong),
+// SAO CHÉP sang đây (hoặc thêm luôn cùng lúc). 2 hàm predictionStats dùng để biết
+// kết quả thực sự thắng kèo (v = gB−gA so với h) thay vì chỉ thắng trận.
+const HANDICAP_GIBOT_HISTORY = {
+  // Lượt 3 bảng B, C (24/06/2026 — đã xong)
+  "Bosnia & Herzegovina|Qatar": -1.0,
+  "Thụy Sỹ|Canada": -0.5,
+  "Morocco|Haiti": -2.0,
+  "Scotland|Brazil": 2.0,
+};
+
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
 // fav: 'A' nếu tA là đội được chấp (đội mạnh hơn), 'B' nếu tB là đội được chấp.
 //      KHÔNG BẮT BUỘC — nếu bỏ trống, hệ thống tự suy ra từ dấu của HANDICAP_GIBOT (kèo gibot.top):
@@ -945,10 +957,28 @@ function predictionStats(){
   Object.entries(PLAYED_R2).forEach(([key,sc])=>{
     const [tA,tB]=key.split('|');
     const a=byTeam[tA],b=byTeam[tB]; if(!a||!b) return;
-    const fav = capabilityScore(a,CAP_W_DEFAULT)>=capabilityScore(b,CAP_W_DEFAULT)?tA:tB;
-    const [ga,gb]=sc; total++;
-    if(ga===gb){ draw++; wrong.push({tA,tB,ga,gb,fav,kind:'draw'}); }
-    else { const winner=ga>gb?tA:tB; if(winner===fav) ok++; else { upset++; wrong.push({tA,tB,ga,gb,fav,kind:'upset'}); } }
+    const [ga,gb]=sc;
+    const h=(typeof HANDICAP_GIBOT_HISTORY!=='undefined'&&HANDICAP_GIBOT_HISTORY[key]!=null)?HANDICAP_GIBOT_HISTORY[key]:null;
+    if(h!==null){
+      // Kèo-based: P(thắng kèo) từ capability buckets tại handicap h
+      const capBuckets=capabilityBuckets(a,b,CAP_W_DEFAULT);
+      const split=handicapSplit(capBuckets,h);
+      const predictedLetter=split.lt>=split.gt?'A':'B'; // pLt=tA thắng kèo, pGt=tB thắng kèo
+      const fav=predictedLetter==='A'?tA:tB;
+      const v=gb-ga;
+      const actualKeo=v>h?'B':v<h?'A':'draw';
+      total++;
+      if(actualKeo==='draw'){ draw++; wrong.push({tA,tB,ga,gb,fav,kind:'draw'}); }
+      else if(actualKeo===predictedLetter){ ok++; }
+      else { upset++; wrong.push({tA,tB,ga,gb,fav,kind:'upset'}); }
+    } else {
+      // Fallback (lượt cũ chưa có gibot): đo theo thắng trận
+      const capA=capabilityScore(a,CAP_W_DEFAULT),capB=capabilityScore(b,CAP_W_DEFAULT);
+      const fav=capA>=capB?tA:tB;
+      total++;
+      if(ga===gb){ draw++; wrong.push({tA,tB,ga,gb,fav,kind:'draw'}); }
+      else { const winner=ga>gb?tA:tB; if(winner===fav) ok++; else { upset++; wrong.push({tA,tB,ga,gb,fav,kind:'upset'}); } }
+    }
   });
   return {ok,draw,upset,total,wrong};
 }
@@ -972,7 +1002,7 @@ function renderPredictionStats(){
   });
   el.innerHTML=`<div class="card">
     <h3 style="margin-bottom:2px;">📈 Độ chính xác dự đoán</h3>
-    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#7aa2f2;">Mô hình năng lực</b> (trọng số mặc định 50/30/20): dự đoán đội mạnh hơn thắng, đối chiếu kết quả thật <b>${s.total}</b> trận đã đá (tích lũy qua các lượt). Độ chính xác theo kèo bet365 xem ở donut bên dưới (từ lượt 3 trở đi).</div>
+    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#7aa2f2;">Mô hình năng lực</b> (50/30/20): dự đoán đội mạnh hơn <b>thắng kèo</b> (khi có gibot) hoặc thắng trận (lượt cũ chưa có gibot). Tổng <b>${s.total}</b> trận tích lũy qua các lượt.</div>
     <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
       <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
         <svg viewBox="0 0 120 120" style="width:120px;height:120px;">${arcs}</svg>
@@ -982,12 +1012,12 @@ function renderPredictionStats(){
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;min-width:190px;flex:1;">
-        ${_statLegend('var(--positive)','✅ Đoán đúng đội thắng',s.ok)}
-        ${_statLegend('var(--text-dim)','🤝 Trận hòa',s.draw)}
-        ${_statLegend('var(--negative)','❌ Bất ngờ (cửa dưới thắng)',s.upset)}
+        ${_statLegend('var(--positive)','✅ Đoán đúng thắng kèo',s.ok)}
+        ${_statLegend('var(--text-dim)','🤝 Hoà kèo (push)',s.draw)}
+        ${_statLegend('var(--negative)','❌ Dự đoán sai kèo',s.upset)}
       </div>
     </div>
-    ${s.wrong.length?`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;font-size:11.5px;color:var(--text-secondary);line-height:1.8;"><b style="color:var(--c-body);">Các trận model đoán trật:</b><br>${s.wrong.map(w=>`${w.tA} ${w.ga}–${w.gb} ${w.tB} <span style="color:var(--text-dim);">(dự đoán ${w.fav}${w.kind==='draw'?' thắng → thực ra hòa':' thắng → cửa dưới thắng'})</span>`).join('<br>')}</div>`:''}
+    ${s.wrong.length?`<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;font-size:11.5px;color:var(--text-secondary);line-height:1.8;"><b style="color:var(--c-body);">Các trận model đoán trật:</b><br>${s.wrong.map(w=>`${w.tA} ${w.ga}–${w.gb} ${w.tB} <span style="color:var(--text-dim);">(dự đoán ${w.fav}${w.kind==='draw'?' thắng kèo → thực ra hoà kèo':' thắng kèo → đối thủ thắng kèo'})</span>`).join('<br>')}</div>`:''}
   </div>`;
 }
 
@@ -1002,12 +1032,30 @@ function predictionStatsBet365(){
     const odds=BET365_ODDS_HISTORY[key];
     if(!odds) return; // không có dữ liệu kèo bet365 cho trận này (vd lượt 2 đã xóa, không truy hồi)
     const [tA,tB]=key.split('|');
-    const favLetter=resolveFav(key,odds);
-    if(!favLetter) return; // không xác định được đội được chấp
-    const favTeam=favLetter==='A'?tA:tB;
-    const [ga,gb]=sc; total++;
-    if(ga===gb){ draw++; wrong.push({tA,tB,ga,gb,fav:favTeam,kind:'draw'}); }
-    else { const winner=ga>gb?tA:tB; if(winner===favTeam) ok++; else { upset++; wrong.push({tA,tB,ga,gb,fav:favTeam,kind:'upset'}); } }
+    const [ga,gb]=sc;
+    const h=(typeof HANDICAP_GIBOT_HISTORY!=='undefined'&&HANDICAP_GIBOT_HISTORY[key]!=null)?HANDICAP_GIBOT_HISTORY[key]:null;
+    if(h!==null){
+      // Kèo-based: P(thắng kèo) từ phân bố bet365 tại handicap h
+      const buckets=marginDistFromLadder(odds.ladder,odds.fav);
+      if(!buckets) return;
+      const split=handicapSplit(buckets,h);
+      const predictedLetter=split.lt>=split.gt?'A':'B'; // pLt=tA thắng kèo, pGt=tB thắng kèo
+      const favTeam=predictedLetter==='A'?tA:tB;
+      const v=gb-ga;
+      const actualKeo=v>h?'B':v<h?'A':'draw';
+      total++;
+      if(actualKeo==='draw'){ draw++; wrong.push({tA,tB,ga,gb,fav:favTeam,kind:'draw'}); }
+      else if(actualKeo===predictedLetter){ ok++; }
+      else { upset++; wrong.push({tA,tB,ga,gb,fav:favTeam,kind:'upset'}); }
+    } else {
+      // Fallback (khi không có h): dùng bet365 fav + match result
+      const favLetter=resolveFav(key,odds);
+      if(!favLetter) return;
+      const favTeam=favLetter==='A'?tA:tB;
+      total++;
+      if(ga===gb){ draw++; wrong.push({tA,tB,ga,gb,fav:favTeam,kind:'draw'}); }
+      else { const winner=ga>gb?tA:tB; if(winner===favTeam) ok++; else { upset++; wrong.push({tA,tB,ga,gb,fav:favTeam,kind:'upset'}); } }
+    }
   });
   return {ok,draw,upset,total,wrong};
 }
@@ -1025,7 +1073,7 @@ function renderPredictionStatsBet365(){
   });
   el.innerHTML=`<div class="card">
     <h3 style="margin-bottom:2px;">📈 Độ chính xác dự đoán theo kèo Bet365</h3>
-    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#5b8def;">Kèo chấp Bet365</b>: dự đoán đội được chấp thắng, đối chiếu kết quả thật <b>${s.total}</b> trận đã đá.</div>
+    <div class="card-sub" style="margin-bottom:14px;">Theo <b style="color:#5b8def;">Kèo chấp Bet365</b>: dự đoán đội được chấp <b>thắng kèo</b> (đối chiếu theo đường kèo gibot — hoà kèo tính riêng). Tổng <b>${s.total}</b> trận có lưu kèo bet365.</div>
     <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
       <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
         <svg viewBox="0 0 120 120" style="width:120px;height:120px;">${arcs}</svg>
