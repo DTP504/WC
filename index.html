@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='26/06/2026 — lượt 3: bảng A,B,C,E,F đã xong; bảng D chờ đá (Paraguay–Úc, Thổ Nhĩ Kỳ–Mỹ); bảng G,H,I có kèo bet365 (NZ–Bỉ, Cape Verde–Ả Rập, Uruguay–TBN, Na Uy–Pháp, Senegal–Iraq). Bảng J–L: sắp có.';
+if(_lu) _lu.textContent='26/06/2026 — lượt 3: bảng A,B,C,D,E,F đã xong (12 KQ); bảng G,H,I có kèo bet365 (NZ–Bỉ, Cape Verde–Ả Rập, Uruguay–TBN, Na Uy–Pháp, Senegal–Iraq). Bảng J–L: sắp có.';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -603,16 +603,16 @@ const PLAYED_R2 = {
   "Ecuador|Đức": [2,1],
   "Nhật Bản|Thụy Điển": [1,1],
   "Tunisia|Hà Lan": [1,3],
+  // Lượt 3 bảng D (26/06/2026 — đã xong)
+  "Paraguay|Australia": [0,0],
+  "Thổ Nhĩ Kỳ|Mỹ": [3,2],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
 // Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
 // Lượt 3 — lấy từ gibot.top ngày 24/06/2026 (trận #49–#54).
 const HANDICAP_GIBOT = {
-  // Bảng A,E,F đã đá xong 25/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
-  // Lượt 3 — còn lại bảng D (chờ đá)
-  "Paraguay|Australia": -0.5,      // gibot: Paraguay (T) chấp 0.5
-  "Thổ Nhĩ Kỳ|Mỹ": 0.5,           // gibot: USA (P) chấp 0.5
+  // Bảng A,B,C,D,E,F đã đá xong 25–26/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
   // Bảng G, H, I (kèo bet365 26/06/2026 — dùng main AH làm proxy gibot)
   "New Zealand|Bỉ": 2.5,           // Bỉ chấp 2.5 (main -2.0,-2.5)
   "Cape Verde|Saudi Arabia": 0,    // ngang bằng (main 0.0)
@@ -639,6 +639,9 @@ const HANDICAP_GIBOT_HISTORY = {
   "Ecuador|Đức": 1.0,
   "Nhật Bản|Thụy Điển": -0.5,
   "Tunisia|Hà Lan": 2.5,
+  // Lượt 3 bảng D (26/06/2026 — đã xong)
+  "Paraguay|Australia": -0.5,
+  "Thổ Nhĩ Kỳ|Mỹ": 0.5,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -657,17 +660,7 @@ const HANDICAP_GIBOT_HISTORY = {
 //   ]}
 const BET365_ODDS = {
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
-  // Bảng A,E,F đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
-  // Bảng D — kèo bet365 cập nhật 26/06/2026
-  "Paraguay|Australia": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:2.500, oddsUnd:1.500},
-    {line:-1.5, oddsFav:5.750, oddsUnd:1.140},
-  ]},
-  "Thổ Nhĩ Kỳ|Mỹ": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.825, oddsUnd:2.025},
-    {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
-    {line:-2.5, oddsFav:6.000, oddsUnd:1.125},
-  ]},
+  // Bảng A,B,C,D,E,F đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
   // Bảng G, H, I — kèo bet365 26/06/2026
   "New Zealand|Bỉ": {fav:'B', ladder:[
     {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
