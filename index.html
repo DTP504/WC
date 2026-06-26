@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='26/06/2026 — lượt 3: bảng A,B,C,D,E,F đã xong (12 KQ); bảng G,H,I có kèo bet365 (NZ–Bỉ, Cape Verde–Ả Rập, Uruguay–TBN, Na Uy–Pháp, Senegal–Iraq). Bảng J–L: sắp có.';
+if(_lu) _lu.textContent='26/06/2026 — lượt 3: bảng A–F đã xong (12 KQ); bảng G–L có kèo gibot (20 trận). Chờ ảnh bet365 cho G,H,I,J,K,L.';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -554,9 +554,12 @@ const FIXTURES=[
   ["D","Paraguay","Australia"],["D","Thổ Nhĩ Kỳ","Mỹ"],
   ["E","Curacao","Bờ Biển Ngà"],["E","Ecuador","Đức"],
   ["F","Nhật Bản","Thụy Điển"],["F","Tunisia","Hà Lan"],
-  ["G","New Zealand","Bỉ"],
+  ["G","New Zealand","Bỉ"],["G","Ai Cập","Iran"],
   ["H","Cape Verde","Saudi Arabia"],["H","Uruguay","Tây Ban Nha"],
   ["I","Na Uy","Pháp"],["I","Senegal","Iraq"],
+  ["J","Algeria","Áo"],["J","Jordan","Argentina"],["J","Nam Phi","Canada"],
+  ["K","Colombia","Bồ Đào Nha"],["K","CHDC Congo","Uzbekistan"],
+  ["L","Croatia","Ghana"],["L","Panama","Anh"],
 ];
 
 // ── Kho TÍCH LŨY kết quả mọi trận đã đá qua các lượt (key: "home|away", value: [gf,ga]) ──
@@ -614,11 +617,20 @@ const PLAYED_R2 = {
 const HANDICAP_GIBOT = {
   // Bảng A,B,C,D,E,F đã đá xong 25–26/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
   // Bảng G, H, I (kèo bet365 26/06/2026 — dùng main AH làm proxy gibot)
-  "New Zealand|Bỉ": 2.5,           // Bỉ chấp 2.5 (main -2.0,-2.5)
-  "Cape Verde|Saudi Arabia": 0,    // ngang bằng (main 0.0)
-  "Uruguay|Tây Ban Nha": 1.0,      // TBN chấp 1.0 (main -1.0)
-  "Na Uy|Pháp": 1.0,               // Pháp chấp 1.0 (main -1.0)
-  "Senegal|Iraq": -2.0,            // Senegal chấp 2.0 (main -1.5,-2.0)
+  "New Zealand|Bỉ": 2.0,           // Bỉ chấp 2.0 (gibot 26/06)
+  "Ai Cập|Iran": -0.5,             // Ai Cập chấp 0.5 (gibot 26/06)
+  "Cape Verde|Saudi Arabia": 0,    // ngang bằng (gibot 26/06)
+  "Uruguay|Tây Ban Nha": 1.0,      // TBN chấp 1.0 (gibot 26/06)
+  "Na Uy|Pháp": 1.0,               // Pháp chấp 1.0 (gibot 26/06)
+  "Senegal|Iraq": -2.0,            // Senegal chấp 2.0 (gibot 26/06)
+  // Bảng J, K, L (gibot 26/06/2026)
+  "Algeria|Áo": 0.5,               // Áo chấp 0.5
+  "Jordan|Argentina": 2.0,         // Argentina chấp 2.0
+  "Nam Phi|Canada": 1.0,           // Canada chấp 1.0
+  "Colombia|Bồ Đào Nha": 1.0,      // Bồ Đào Nha chấp 1.0
+  "CHDC Congo|Uzbekistan": -0.5,   // CHDC Congo chấp 0.5
+  "Croatia|Ghana": -0.5,           // Croatia chấp 0.5
+  "Panama|Anh": 2.0,               // Anh chấp 2.0
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -662,6 +674,10 @@ const BET365_ODDS = {
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
   // Bảng A,B,C,D,E,F đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
   // Bảng G, H, I — kèo bet365 26/06/2026
+  "Ai Cập|Iran": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.375, oddsUnd:1.550},
+    {line:-1.5, oddsFav:5.500, oddsUnd:1.150},
+  ]},
   "New Zealand|Bỉ": {fav:'B', ladder:[
     {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
     {line:-1.5, oddsFav:1.450, oddsUnd:2.675},
@@ -782,6 +798,11 @@ const BET365_ODDS_HISTORY = {
     {line:-1.5, oddsFav:1.650, oddsUnd:2.200},
     {line:-2.5, oddsFav:2.675, oddsUnd:1.450},
     {line:-3.5, oddsFav:4.800, oddsUnd:1.175},
+  ]},
+  // Bảng G (26/06/2026 — chỉ mới thêm kèo, chưa đá)
+  "Ai Cập|Iran": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.375, oddsUnd:1.550},
+    {line:-1.5, oddsFav:5.500, oddsUnd:1.150},
   ]},
 };
 
