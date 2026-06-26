@@ -489,10 +489,10 @@ const RESULTS = {
   "Brazil":[["Morocco",1,1,"D"],["Haiti",3,0,"W"],["Scotland",3,0,"W"]],"Morocco":[["Brazil",1,1,"D"],["Scotland",1,0,"W"],["Haiti",4,2,"W"]],
   "Scotland":[["Haiti",1,0,"W"],["Morocco",0,1,"L"],["Brazil",0,3,"L"]],"Haiti":[["Scotland",0,1,"L"],["Brazil",0,3,"L"],["Morocco",2,4,"L"]],
   "Australia":[["Thổ Nhĩ Kỳ",2,0,"W"],["Mỹ",0,2,"L"]],"Thổ Nhĩ Kỳ":[["Australia",0,2,"L"],["Paraguay",0,1,"L"]],
-  "Đức":[["Curacao",7,1,"W"],["Bờ Biển Ngà",2,1,"W"]],"Curacao":[["Đức",1,7,"L"],["Ecuador",0,0,"D"]],
-  "Bờ Biển Ngà":[["Ecuador",1,0,"W"],["Đức",1,2,"L"]],"Ecuador":[["Bờ Biển Ngà",0,1,"L"],["Curacao",0,0,"D"]],
-  "Hà Lan":[["Nhật Bản",2,2,"D"],["Thụy Điển",5,1,"W"]],"Nhật Bản":[["Hà Lan",2,2,"D"],["Tunisia",4,0,"W"]],
-  "Thụy Điển":[["Tunisia",5,1,"W"],["Hà Lan",1,5,"L"]],"Tunisia":[["Thụy Điển",1,5,"L"],["Nhật Bản",0,4,"L"]],
+  "Đức":[["Curacao",7,1,"W"],["Bờ Biển Ngà",2,1,"W"],["Ecuador",1,2,"L"]],"Curacao":[["Đức",1,7,"L"],["Ecuador",0,0,"D"],["Bờ Biển Ngà",0,2,"L"]],
+  "Bờ Biển Ngà":[["Ecuador",1,0,"W"],["Đức",1,2,"L"],["Curacao",2,0,"W"]],"Ecuador":[["Bờ Biển Ngà",0,1,"L"],["Curacao",0,0,"D"],["Đức",2,1,"W"]],
+  "Hà Lan":[["Nhật Bản",2,2,"D"],["Thụy Điển",5,1,"W"],["Tunisia",3,1,"W"]],"Nhật Bản":[["Hà Lan",2,2,"D"],["Tunisia",4,0,"W"],["Thụy Điển",1,1,"D"]],
+  "Thụy Điển":[["Tunisia",5,1,"W"],["Hà Lan",1,5,"L"],["Nhật Bản",1,1,"D"]],"Tunisia":[["Thụy Điển",1,5,"L"],["Nhật Bản",0,4,"L"],["Hà Lan",1,3,"L"]],
   "Tây Ban Nha":[["Cape Verde",0,0,"D"],["Saudi Arabia",4,0,"W"]],"Cape Verde":[["Tây Ban Nha",0,0,"D"],["Uruguay",2,2,"D"]],
   "Uruguay":[["Saudi Arabia",1,1,"D"],["Cape Verde",2,2,"D"]],"Saudi Arabia":[["Uruguay",1,1,"D"],["Tây Ban Nha",0,4,"L"]],
   "Iran":[["New Zealand",2,2,"D"],["Bỉ",0,0,"D"]],"New Zealand":[["Iran",2,2,"D"],["Ai Cập",1,3,"L"]],
@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='25/06/2026 — lượt 3: bảng A,B,C đã xong (6 KQ: CH Séc 0–3 Mexico, Nam Phi 1–0 HQ + B,C); kèo bet365 bảng D,E,F chờ đá rạng sáng 26/06 (Paraguay–Úc, Thổ Nhĩ Kỳ–Mỹ, Curaçao–BBN, Ecuador–Đức, Nhật–Thụy Điển, Tunisia–Hà Lan)';
+if(_lu) _lu.textContent='26/06/2026 — lượt 3: bảng A,B,C,E,F đã xong (10 KQ); bảng D chờ đá (Paraguay–Úc, Thổ Nhĩ Kỳ–Mỹ). Bảng G–L: 26–28/06';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -595,20 +595,21 @@ const PLAYED_R2 = {
   // Lượt 3 bảng A (25/06/2026 — đã xong, xác minh ESPN)
   "CH Séc|Mexico": [0,3],
   "Nam Phi|Hàn Quốc": [1,0],
+  // Lượt 3 bảng E, F (25/06/2026 — đã xong, xác minh ESPN standings GP=3)
+  "Curacao|Bờ Biển Ngà": [0,2],
+  "Ecuador|Đức": [2,1],
+  "Nhật Bản|Thụy Điển": [1,1],
+  "Tunisia|Hà Lan": [1,3],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
 // Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
 // Lượt 3 — lấy từ gibot.top ngày 24/06/2026 (trận #49–#54).
 const HANDICAP_GIBOT = {
-  // Bảng A đã đá xong 25/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
-  // Lượt 3 — gibot.top ngày 25/06/2026 (trận #55–#60)
+  // Bảng A,E,F đã đá xong 25/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
+  // Lượt 3 — còn lại bảng D (chờ đá)
   "Paraguay|Australia": -0.5,      // gibot: Paraguay (T) chấp 0.5
   "Thổ Nhĩ Kỳ|Mỹ": 0.5,           // gibot: USA (P) chấp 0.5
-  "Curacao|Bờ Biển Ngà": 2.5,      // gibot: Ivory Coast (P) chấp 2.5
-  "Ecuador|Đức": 1.0,              // gibot: Germany (P) chấp 1.0
-  "Nhật Bản|Thụy Điển": -0.5,      // gibot: Japan (T) chấp 0.5
-  "Tunisia|Hà Lan": 2.5,           // gibot: Netherlands (P) chấp 2.5
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -624,6 +625,11 @@ const HANDICAP_GIBOT_HISTORY = {
   // Lượt 3 bảng A (25/06/2026 — đã xong)
   "CH Séc|Mexico": 0.5,
   "Nam Phi|Hàn Quốc": 1.0,
+  // Lượt 3 bảng E, F (25/06/2026 — đã xong)
+  "Curacao|Bờ Biển Ngà": 2.5,
+  "Ecuador|Đức": 1.0,
+  "Nhật Bản|Thụy Điển": -0.5,
+  "Tunisia|Hà Lan": 2.5,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -642,38 +648,16 @@ const HANDICAP_GIBOT_HISTORY = {
 //   ]}
 const BET365_ODDS = {
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
-  // Bảng A đã đá xong 25/06 → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
-  // Bảng D, E, F — kèo bet365 ngày 25/06/2026
+  // Bảng A,E,F đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
+  // Bảng D — kèo bet365 cập nhật 26/06/2026
   "Paraguay|Australia": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:2.850, oddsUnd:1.400},
-    {line:-1.5, oddsFav:6.400, oddsUnd:1.115},
+    {line:-0.5, oddsFav:2.500, oddsUnd:1.500},
+    {line:-1.5, oddsFav:5.750, oddsUnd:1.140},
   ]},
   "Thổ Nhĩ Kỳ|Mỹ": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
-    {line:-1.5, oddsFav:3.300, oddsUnd:1.325},
-    {line:-2.5, oddsFav:6.800, oddsUnd:1.105},
-  ]},
-  "Curacao|Bờ Biển Ngà": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
-    {line:-1.5, oddsFav:1.450, oddsUnd:2.675},
-    {line:-2.5, oddsFav:2.200, oddsUnd:1.650},
-    {line:-3.5, oddsFav:3.700, oddsUnd:1.260},
-  ]},
-  "Ecuador|Đức": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
-    {line:-1.5, oddsFav:2.375, oddsUnd:1.550},
-    {line:-2.5, oddsFav:4.400, oddsUnd:1.200},
-  ]},
-  "Nhật Bản|Thụy Điển": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
-    {line:-1.5, oddsFav:3.100, oddsUnd:1.350},
-    {line:-2.5, oddsFav:6.600, oddsUnd:1.110},
-  ]},
-  "Tunisia|Hà Lan": {fav:'B', ladder:[
-    {line:-1.5, oddsFav:1.325, oddsUnd:3.300},
-    {line:-2.5, oddsFav:1.900, oddsUnd:1.950},
-    {line:-3.5, oddsFav:3.000, oddsUnd:1.375},
-    {line:-4.5, oddsFav:5.500, oddsUnd:1.150},
+    {line:-0.5, oddsFav:1.825, oddsUnd:2.025},
+    {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
+    {line:-2.5, oddsFav:6.000, oddsUnd:1.125},
   ]},
 };
 
@@ -711,15 +695,15 @@ const BET365_ODDS_HISTORY = {
     {line:-1.5, oddsFav:2.000, oddsUnd:1.850},
     {line:-2.5, oddsFav:3.450, oddsUnd:1.300},
   ]},
-  // Bảng D, E, F (25/06/2026)
+  // Bảng D (cập nhật kèo 26/06/2026)
   "Paraguay|Australia": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:2.850, oddsUnd:1.400},
-    {line:-1.5, oddsFav:6.400, oddsUnd:1.115},
+    {line:-0.5, oddsFav:2.500, oddsUnd:1.500},
+    {line:-1.5, oddsFav:5.750, oddsUnd:1.140},
   ]},
   "Thổ Nhĩ Kỳ|Mỹ": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
-    {line:-1.5, oddsFav:3.300, oddsUnd:1.325},
-    {line:-2.5, oddsFav:6.800, oddsUnd:1.105},
+    {line:-0.5, oddsFav:1.825, oddsUnd:2.025},
+    {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
+    {line:-2.5, oddsFav:6.000, oddsUnd:1.125},
   ]},
   "Curacao|Bờ Biển Ngà": {fav:'B', ladder:[
     {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
@@ -1546,36 +1530,36 @@ const PREMATCH_NEWS={
     {t:"📋","n":"Sau trận thua đậm Mỹ, chiến thắng này giúp Paraguay nuôi hy vọng vào vòng 1/8"},
   ],
   "Đức":[
-    {t:"🔥","n":"Ngược dòng nghẹt thở thắng Bờ Biển Ngà 2-1 — Deniz Undav vào sân từ ghế dự bị lập cú đôi, ấn định ở phút 94"},
-    {t:"📋","n":"Toàn thắng 2 trận, hiệu số +7 — sớm giành vé đi tiếp trước cả khi lượt 3 khởi tranh"},
+    {t:"💔","n":"Thua Ecuador 1-2 ở lượt 3 — bất ngờ lớn dù đã sớm giành vé đi tiếp từ lượt 2"},
+    {t:"📋","n":"6 điểm, nhất bảng E (hơn BĐN hiệu số +6 vs +2) — vẫn đi tiếp dù thua trận cuối"},
   ],
   "Bờ Biển Ngà":[
-    {t:"💔","n":"Dẫn trước nhờ bàn của đội trưởng Franck Kessié nhưng để Đức lội ngược dòng 1-2 ở phút 94"},
-    {t:"⚠️","n":"Thua sít sao đáng tiếc — vẫn cần tính toán kỹ ở lượt 3 để giữ cơ hội đi tiếp"},
+    {t:"🔥","n":"Thắng Curacao 2-0 ở lượt 3 — giành vé vào vòng 1/8 với 6 điểm, nhì bảng E"},
+    {t:"🏆","n":"Phục hận sau trận thua Đức ở lượt 2 — HLV Emerse Faé dẫn dắt đội xuất sắc"},
   ],
   "Ecuador":[
-    {t:"⚠️","n":"Hòa 0-0 trước Curacao ở lượt 2 — vẫn chưa thắng trận nào sau 2 lượt"},
-    {t:"📋","n":"Cần thắng đậm ở lượt 3 và chờ kết quả Bờ Biển Ngà-Đức để hy vọng đi tiếp"},
+    {t:"🔥","n":"Thắng Đức 2-1 ở lượt 3 — bất ngờ lớn nhất vòng bảng, lật kèo ngoạn mục"},
+    {t:"📋","n":"4 điểm, hạng 3 bảng E — cơ hội lớn đi tiếp với tư cách đội 3 tốt nhất"},
   ],
   "Curacao":[
-    {t:"🔥","n":"Cầm hòa 0-0 trước Ecuador ở lượt 2 — Eloy Room cứu thua 15 lần, hòa kỷ lục World Cup"},
-    {t:"📋","n":"Có điểm số lịch sử đầu tiên sau khi thua đậm Đức 1-7 ở lượt 1 — cơ hội đi tiếp vẫn mong manh"},
+    {t:"💔","n":"Thua Bờ Biển Ngà 0-2 ở lượt 3 — kết thúc hành trình World Cup lịch sử với 1 điểm"},
+    {t:"📋","n":"1 điểm, cuối bảng E (GD -8) — điểm hòa Ecuador ở lượt 2 là kỷ niệm đáng nhớ"},
   ],
   "Hà Lan":[
-    {t:"🔥","n":"Đại thắng Thụy Điển 5-1 ở lượt 2 — Brian Brobbey và Cody Gakpo mỗi người lập cú đôi"},
-    {t:"📋","n":"Vươn lên đầu bảng F sau màn trình diễn áp đảo, hiệu số bàn thắng vượt trội"},
+    {t:"🔥","n":"Thắng Tunisia 3-1 ở lượt 3 — nhất bảng F với 7 điểm, bất bại cả vòng bảng"},
+    {t:"🏆","n":"GD +6, hiệu số tốt nhất nhóm — vào vòng 1/8 với phong độ ổn định"},
   ],
   "Thụy Điển":[
-    {t:"💔","n":"Thua đậm Hà Lan 1-5 ở lượt 2 sau trận thắng ấn tượng Tunisia trước đó"},
-    {t:"⚠️","n":"Cần thắng Nhật Bản ở lượt 3 và cải thiện hàng thủ để giữ cơ hội đi tiếp"},
+    {t:"🔥","n":"Hòa Nhật Bản 1-1 ở lượt 3 — giành điểm quan trọng giữ cơ hội đi tiếp"},
+    {t:"📋","n":"4 điểm, hạng 3 bảng F — chờ kết quả các bảng khác để biết có vào vòng 1/8"},
   ],
   "Nhật Bản":[
-    {t:"🔥","n":"Đại thắng Tunisia 4-0 ở lượt 2 — 4 điểm sau 2 trận, cùng Hà Lan dẫn đầu bảng F"},
-    {t:"📋","n":"Cần ít nhất 1 điểm trước Thụy Điển ở lượt 3 để chắc suất đi tiếp"},
+    {t:"🔥","n":"Hòa Thụy Điển 1-1 ở lượt 3 — đủ điểm chắc suất nhì bảng F, vào vòng 1/8"},
+    {t:"🏆","n":"5 điểm, bất bại cả vòng bảng (1W 2D) — phong độ ổn định dưới thời HLV Moriyasu"},
   ],
   "Tunisia":[
-    {t:"💔","n":"Thua tiếp Nhật Bản 0-4 ở lượt 2 — 0 điểm sau 2 trận, đứng bét bảng F"},
-    {t:"⚠️","n":"Gần như hết cơ hội đi tiếp, cần thắng đậm Hà Lan ở lượt 3 và chờ kết quả khác"},
+    {t:"💔","n":"Thua Hà Lan 1-3 ở lượt 3 — kết thúc vòng bảng với 0 điểm, GD -10"},
+    {t:"📋","n":"Thua cả 3 trận (1-5, 0-4, 1-3) — vòng bảng thảm họa, sớm bị loại"},
   ],
   "Tây Ban Nha":[
     {t:"🔥","n":"Đại thắng Saudi Arabia 4-0 ở lượt 2 sau khi hòa Cape Verde — 4 điểm, dẫn đầu bảng H"},
@@ -1712,6 +1696,103 @@ const REAL_FORM = {
     {opp:"Nigeria",      res:"D", gf:1, ga:1, xgf:null, xga:null, oppRank:44},
     {opp:"Lesotho",      res:"W", gf:3, ga:0, xgf:null, xga:null, oppRank:150},
   ],
+  // ── Bảng D, E, F — thêm 25/06/2026 (xG từ SofaScore API) ──
+  // Paraguay (CONMEBOL → 0/5 xG)
+  "Paraguay":[
+    {opp:"Brazil",       res:"L", gf:0, ga:1, xgf:null, xga:null, oppRank:5},
+    {opp:"Uruguay",      res:"W", gf:2, ga:0, xgf:null, xga:null, oppRank:15},
+    {opp:"Colombia",     res:"D", gf:2, ga:2, xgf:null, xga:null, oppRank:14},
+    {opp:"Chile",        res:"W", gf:1, ga:0, xgf:null, xga:null, oppRank:55},
+    {opp:"Bolivia",      res:"D", gf:2, ga:2, xgf:null, xga:null, oppRank:84},
+  ],
+  // Australia (AFC + giao hữu — 1/5 xG, giao hữu New Zealand)
+  "Australia":[
+    {opp:"New Zealand",  res:"W", gf:1, ga:0, xgf:0.61, xga:0.72, oppRank:90},
+    {opp:"Saudi Arabia", res:"W", gf:2, ga:1, xgf:null, xga:null, oppRank:58},
+    {opp:"Nhật Bản",     res:"W", gf:1, ga:0, xgf:null, xga:null, oppRank:17},
+    {opp:"Trung Quốc",   res:"W", gf:2, ga:0, xgf:null, xga:null, oppRank:90},
+    {opp:"Indonesia",    res:"W", gf:5, ga:1, xgf:null, xga:null, oppRank:120},
+  ],
+  // Mỹ (Gold Cup + giao hữu — 5/5 xG ✅)
+  "Mỹ":[
+    {opp:"Nhật Bản",     res:"W", gf:2, ga:1, xgf:1.82, xga:0.54, oppRank:17},
+    {opp:"Hàn Quốc",     res:"W", gf:2, ga:0, xgf:2.87, xga:0.76, oppRank:23},
+    {opp:"Mexico",       res:"L", gf:1, ga:2, xgf:1.11, xga:1.34, oppRank:13},
+    {opp:"Guatemala",    res:"W", gf:2, ga:1, xgf:1.77, xga:1.40, oppRank:106},
+    {opp:"Costa Rica",   res:"D", gf:2, ga:2, xgf:2.97, xga:1.89, oppRank:54},
+  ],
+  // Thổ Nhĩ Kỳ (UEFA + giao hữu — 5/5 xG ✅)
+  "Thổ Nhĩ Kỳ":[
+    {opp:"Bulgaria",     res:"W", gf:6, ga:1, xgf:1.84, xga:0.53, oppRank:84},
+    {opp:"Tây Ban Nha",  res:"L", gf:0, ga:6, xgf:0.42, xga:3.14, oppRank:1},
+    {opp:"Georgia",      res:"W", gf:3, ga:2, xgf:1.09, xga:0.70, oppRank:67},
+    {opp:"Mexico",       res:"L", gf:0, ga:1, xgf:0.81, xga:0.90, oppRank:13},
+    {opp:"Mỹ",           res:"W", gf:2, ga:1, xgf:1.92, xga:1.13, oppRank:16},
+  ],
+  // Curaçao (Gold Cup + giao hữu — 3/5 xG ≥ngưỡng)
+  "Curacao":[
+    {opp:"Honduras",     res:"L", gf:1, ga:2, xgf:0.89, xga:0.92, oppRank:80},
+    {opp:"Canada",       res:"D", gf:1, ga:1, xgf:0.38, xga:0.44, oppRank:27},
+    {opp:"El Salvador",  res:"D", gf:0, ga:0, xgf:null, xga:null, oppRank:101},
+    {opp:"Haiti",        res:"W", gf:5, ga:1, xgf:null, xga:null, oppRank:83},
+    {opp:"Saint Lucia",  res:"W", gf:4, ga:0, xgf:0.20, xga:4.22, oppRank:177},
+  ],
+  // Bờ Biển Ngà (CAF qualifying — 0/5 xG)
+  "Bờ Biển Ngà":[
+    {opp:"Canada",       res:"D", gf:0, ga:0, xgf:null, xga:null, oppRank:27},
+    {opp:"New Zealand",  res:"L", gf:0, ga:1, xgf:null, xga:null, oppRank:90},
+    {opp:"Burkina Faso", res:"W", gf:2, ga:0, xgf:null, xga:null, oppRank:62},
+    {opp:"Guinea",       res:"L", gf:1, ga:4, xgf:null, xga:null, oppRank:75},
+    {opp:"Zambia",       res:"L", gf:0, ga:1, xgf:null, xga:null, oppRank:88},
+  ],
+  // Đức (UEFA — 5/5 xG ✅)
+  "Đức":[
+    {opp:"Luxembourg",   res:"W", gf:4, ga:0, xgf:3.35, xga:0.16, oppRank:91},
+    {opp:"Bắc Ireland",  res:"W", gf:3, ga:1, xgf:0.11, xga:1.64, oppRank:69},
+    {opp:"Slovakia",     res:"L", gf:0, ga:2, xgf:1.24, xga:1.69, oppRank:48},
+    {opp:"Pháp",         res:"L", gf:0, ga:2, xgf:2.02, xga:2.82, oppRank:3},
+    {opp:"Bồ Đào Nha",   res:"L", gf:1, ga:2, xgf:1.32, xga:2.68, oppRank:6},
+  ],
+  // Hà Lan (UEFA — 5/5 xG ✅)
+  "Hà Lan":[
+    {opp:"Lithuania",    res:"W", gf:3, ga:2, xgf:2.29, xga:0.22, oppRank:139},
+    {opp:"Ba Lan",       res:"D", gf:1, ga:1, xgf:0.25, xga:0.72, oppRank:35},
+    {opp:"Malta",        res:"W", gf:8, ga:0, xgf:5.07, xga:0.30, oppRank:170},
+    {opp:"Phần Lan",     res:"W", gf:2, ga:0, xgf:3.04, xga:3.98, oppRank:64},
+    {opp:"Tây Ban Nha",  res:"D", gf:2, ga:2, xgf:1.00, xga:0.33, oppRank:1},
+  ],
+  // Nhật Bản (AFC + giao hữu — 4/5 xG ≥ngưỡng)
+  "Nhật Bản":[
+    {opp:"Mexico",       res:"D", gf:0, ga:0, xgf:0.55, xga:0.97, oppRank:13},
+    {opp:"Hàn Quốc",     res:"W", gf:1, ga:0, xgf:1.04, xga:0.46, oppRank:23},
+    {opp:"Trung Quốc",   res:"W", gf:2, ga:0, xgf:2.82, xga:0.81, oppRank:90},
+    {opp:"Hong Kong",    res:"W", gf:6, ga:1, xgf:null, xga:null, oppRank:153},
+    {opp:"Indonesia",    res:"W", gf:6, ga:0, xgf:1.68, xga:0.60, oppRank:120},
+  ],
+  // Thụy Điển (UEFA + giao hữu — 4/5 xG ≥ngưỡng)
+  "Thụy Điển":[
+    {opp:"Hungary",      res:"W", gf:2, ga:0, xgf:1.51, xga:1.20, oppRank:34},
+    {opp:"Algeria",      res:"W", gf:4, ga:3, xgf:3.10, xga:2.35, oppRank:45},
+    {opp:"Slovenia",     res:"D", gf:2, ga:2, xgf:0.73, xga:1.31, oppRank:55},
+    {opp:"Kosovo",       res:"L", gf:0, ga:2, xgf:0.60, xga:1.68, oppRank:79},
+    {opp:"Serbia",       res:"L", gf:0, ga:3, xgf:null, xga:null, oppRank:33},
+  ],
+  // Tunisia (Arab Cup + giao hữu — 1/5 xG, không đủ ngưỡng)
+  "Tunisia":[
+    {opp:"Brazil",       res:"D", gf:1, ga:1, xgf:0.58, xga:2.69, oppRank:5},
+    {opp:"Botswana",     res:"W", gf:2, ga:1, xgf:null, xga:null, oppRank:170},
+    {opp:"Qatar",        res:"W", gf:3, ga:0, xgf:null, xga:null, oppRank:38},
+    {opp:"Palestine",    res:"D", gf:2, ga:2, xgf:null, xga:null, oppRank:99},
+    {opp:"Syria",        res:"L", gf:0, ga:1, xgf:null, xga:null, oppRank:97},
+  ],
+  // Ecuador (CONMEBOL → 0/5 xG)
+  "Ecuador":[
+    {opp:"Peru",         res:"D", gf:0, ga:0, xgf:null, xga:null, oppRank:46},
+    {opp:"Brazil",       res:"D", gf:0, ga:0, xgf:null, xga:null, oppRank:5},
+    {opp:"Chile",        res:"D", gf:0, ga:0, xgf:null, xga:null, oppRank:55},
+    {opp:"Venezuela",    res:"W", gf:2, ga:1, xgf:null, xga:null, oppRank:53},
+    {opp:"Colombia",     res:"W", gf:1, ga:0, xgf:null, xga:null, oppRank:14},
+  ],
 };
 
 function realFormScore(team){
@@ -1730,10 +1811,12 @@ function realFormScore(team){
   // SoS (tối đa 2): hạng FIFA TB của đối thủ. rank≤25→2đ, rank≥100→0đ
   let r=0; ms.forEach(m=> r+=m.oppRank); const avgRank=r/n;
   const sos=Math.max(0,Math.min(2, 2*(100-avgRank)/75));
-  const complete = xgMs.length===n;          // đủ xG cả 5 trận?
-  const total = complete ? base+xgPts+sos : null; // thiếu xG → không chấm "thực chất"
+  const MIN_XG=3;                             // cần ≥3/5 trận có xG mới chấm "thực chất"
+  const enough = xgMs.length>=MIN_XG;
+  const complete = xgMs.length===n;           // đủ xG cả 5 trận?
+  const total = enough ? base+xgPts+sos : null; // <3 trận xG → không chấm (đánh dấu thiếu xG)
   const naive = wpts/n*10;                    // điểm "ngây thơ" = chỉ nhìn kết quả, quy về 10
-  return {n, base, xgPts, xgDiff, xgCover:xgMs.length, sos, avgRank, complete, total, naive,
+  return {n, base, xgPts, xgDiff, xgCover:xgMs.length, sos, avgRank, enough, complete, total, naive,
           rec:`${ms.filter(m=>m.res==='W').length}T ${ms.filter(m=>m.res==='D').length}H ${ms.filter(m=>m.res==='L').length}B`};
 }
 
@@ -1743,22 +1826,23 @@ function realFormBarHtml(team){
   const COL_BASE='#5b8def', COL_XG='#3dd9b3', COL_XGNEG='#e07870', COL_SOS='#facc15';
   const pct=v=>Math.max(0,Math.min(100,v/10*100));
   const xgCol=(s.xgDiff!=null && s.xgDiff<0)?COL_XGNEG:COL_XG;
-  const baseW=pct(s.base), xgW=s.complete?pct(s.xgPts):0, sosW=pct(s.sos), naiveL=pct(s.naive);
+  const baseW=pct(s.base), xgW=s.enough?pct(s.xgPts):0, sosW=pct(s.sos), naiveL=pct(s.naive);
+  // Dải sọc chỉ hiện khi không đủ xG để chấm (<3/5). Đủ ≥3/5 (kể cả 3 hoặc 4) thì coi như có điểm — chỉ ghi rõ cover trong dòng chi tiết.
   const bar=`<div style="position:relative;height:22px;background:var(--border);border-radius:6px;overflow:hidden;display:flex;">
       <div style="width:${baseW}%;background:${COL_BASE};"></div>
       <div style="width:${xgW}%;background:${xgCol};"></div>
       <div style="width:${sosW}%;background:${COL_SOS};"></div>
-      ${!s.complete?`<div style="width:${pct(3)}%;background:repeating-linear-gradient(45deg,var(--text-dim),var(--text-dim) 4px,transparent 4px,transparent 8px);opacity:.4;"></div>`:''}
+      ${!s.enough?`<div style="width:${pct(3)}%;background:repeating-linear-gradient(45deg,var(--text-dim),var(--text-dim) 4px,transparent 4px,transparent 8px);opacity:.4;"></div>`:''}
       <div title="Phong độ ngây thơ (chỉ kết quả): ${s.naive.toFixed(1)}/10" style="position:absolute;top:-2px;bottom:-2px;left:${naiveL}%;width:2px;background:var(--text);opacity:.85;"></div>
     </div>`;
-  const totLabel = s.complete
-    ? `<b style="font-size:16px;color:var(--text);">${s.total.toFixed(1)}</b><span style="font-size:10px;color:var(--text-secondary);">/10</span>`
+  const totLabel = s.enough
+    ? `<b style="font-size:16px;color:var(--text);">${s.total.toFixed(1)}</b><span style="font-size:10px;color:var(--text-secondary);">/10${s.complete?'':' *'}</span>`
     : `<b style="font-size:12.5px;color:var(--negative);">thiếu xG</b>`;
   const xgTxt = s.xgDiff!=null
-    ? `xG ${s.complete?s.xgPts.toFixed(1):'?'}<span style="color:var(--text-dim);">(${s.xgDiff>=0?'+':''}${s.xgDiff.toFixed(2)}/trận${s.complete?'':`, chỉ ${s.xgCover}/${s.n}`})</span>`
+    ? `xG ${s.enough?s.xgPts.toFixed(1):'?'}<span style="color:var(--text-dim);">(${s.xgDiff>=0?'+':''}${s.xgDiff.toFixed(2)}/trận${s.complete?'':`, ${s.xgCover}/${s.n} trận`})</span>`
     : `xG <span style="color:var(--negative);">không có</span>`;
   const detail=`Base ${s.base.toFixed(1)} <span style="color:var(--text-dim);">(${s.rec})</span> · ${xgTxt} · Lịch ${s.sos.toFixed(1)} <span style="color:var(--text-dim);">(rank ${Math.round(s.avgRank)})</span>`;
-  const gap = s.complete ? (s.total-s.naive) : null;
+  const gap = s.enough ? (s.total-s.naive) : null;
   const gapBadge = gap!=null
     ? `<span style="font-size:10.5px;color:${gap<-0.05?'var(--negative)':gap>0.05?'var(--positive)':'var(--text-secondary)'};">ngây thơ ${s.naive.toFixed(1)} → ${gap>=0?'+':''}${gap.toFixed(1)}</span>`
     : `<span style="font-size:10.5px;color:var(--text-secondary);">ngây thơ ${s.naive.toFixed(1)}</span>`;
@@ -1783,11 +1867,12 @@ function realFormPairHtml(tA,tB){
   const ha=realFormBarHtml(tA), hb=realFormBarHtml(tB);
   if(!ha && !hb) return '';
   const sA=realFormScore(tA), sB=realFormScore(tB);
-  const incomplete=(sA&&!sA.complete)||(sB&&!sB.complete);
+  const missing=(sA&&!sA.enough)||(sB&&!sB.enough);
+  const partial=(sA&&sA.enough&&!sA.complete)||(sB&&sB.enough&&!sB.complete);
   return `<div style="background:rgba(61,217,179,.045);border:1px solid rgba(61,217,179,.14);border-radius:10px;padding:8px 10px 6px;margin-top:8px;">
       <div style="font-size:10.5px;color:#3dd9b3;font-weight:700;margin-bottom:7px;padding:0 2px;">🔬 Phong độ thực chất <span style="font-weight:500;color:var(--c-muted);">(xG THẬT/SofaScore · <span style="color:#5b8def;">Base</span>≤5 + <span style="color:#3dd9b3;">xG</span>≤3 + <span style="color:#facc15;">Lịch</span>≤2 · vạch dọc = chỉ tính KQ)</span></div>
       ${ha}${hb}
-      <div style="font-size:10px;color:var(--text-secondary);padding:2px 2px 0;line-height:1.5;">SoS suy từ hạng FIFA xấp xỉ (ước lượng).${incomplete?' ⚠ Đội thiếu xG (SofaScore không track vòng loại CAF) → không chấm tổng, dải sọc = phần xG khuyết.':''}</div>
+      <div style="font-size:10px;color:var(--text-secondary);padding:2px 2px 0;line-height:1.5;">SoS suy từ hạng FIFA xấp xỉ (ước lượng).${partial?' Dấu * = chỉ có xG ở 3-4/5 trận (SofaScore không track xG ở vòng loại CONMEBOL/AFC/CAF).':''}${missing?' ⚠ Đội thiếu xG (<3/5 trận) → không chấm tổng, dải sọc = phần khuyết.':''}</div>
     </div>`;
 }
 
