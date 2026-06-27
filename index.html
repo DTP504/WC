@@ -1115,6 +1115,100 @@ function capabilityBuckets(dA,dB,w){
   const s=b.reduce((a,c)=>a+c,0);
   return b.map(x=>x/s); // tổng = 1
 }
+// ── Power Rating + Fair Handicap (PP định lượng 50-30-20) ──
+// score 0..10 = 10 × capabilityScore (đội hình 50% · phong độ 30% · HLV 20%).
+// Delta = mạnh − yếu (đã cộng +0.25 cho sân nhà tA — WC 2026 đa số trận ở Mỹ nên nhẹ).
+// Bảng quy đổi Delta → kèo chấp công bằng (lấy từ tài liệu user gửi).
+const DELTA_LADDER=[
+  {d:0.30, h:0.00},   // 0.0–0.2 hoà
+  {d:0.60, h:0.25},   // 0.3–0.5 chấp 1/4
+  {d:1.00, h:0.50},   // 0.6–0.9 chấp 0.5
+  {d:1.40, h:0.75},   // 1.0–1.3 chấp 3/4
+  {d:1.80, h:1.00},   // 1.4–1.7 chấp 1
+  {d:2.20, h:1.25},   // 1.8–2.1 chấp 1.25
+  {d:2.60, h:1.50},   // 2.2–2.5 chấp 1.5
+  {d:3.00, h:1.75},   // 2.6–2.9 chấp 1.75
+  {d:3.40, h:2.00},   // 3.0–3.3 chấp 2
+  {d:3.80, h:2.25},   // 3.4–3.7 chấp 2.25
+  {d:99,   h:2.50},   // >3.7  chấp 2.5+
+];
+function deltaToFairHandicap(delta){
+  const d=Math.abs(delta);
+  for(const r of DELTA_LADDER){ if(d<r.d) return r.h; }
+  return 2.5;
+}
+function powerRating(team,w){
+  const d=DATA.find(x=>x.team===team);
+  return d?capabilityScore(d,w||CAP_W_DEFAULT)*10:5;
+}
+function powerRatingPair(tA,tB,w,homeAdv){
+  const sA=powerRating(tA,w), sB=powerRating(tB,w);
+  const adv=(homeAdv==null?0.25:homeAdv);
+  const sAh=sA+adv;
+  const delta=sB-sAh;
+  const fav=delta>=0?'B':'A';
+  const fairH=deltaToFairHandicap(delta);
+  return {sA, sB, sAadj:sAh, adv, delta, fav, fairH, favTeam:fav==='A'?tA:tB};
+}
+function powerRatingHtml(tA,tB,idx,marketH){
+  const cw=_capW[idx]||CAP_W_DEFAULT;
+  const pr=powerRatingPair(tA,tB,cw,0.25);
+  const fairSign=pr.fav==='A'?-pr.fairH:pr.fairH;   // dấu theo quy ước HANDICAP_GIBOT
+  // So với kèo thị trường: nếu |fair|>|market| ⇒ market định giá thấp đội mạnh ⇒ +EV cho đội mạnh
+  // (vì thực lực vượt kèo). Nếu |fair|<|market| ⇒ market định giá quá cao đội mạnh ⇒ +EV cho đội yếu.
+  let evHtml='';
+  if(marketH!=null && !isNaN(marketH)){
+    const mFav=marketH<0?'A':marketH>0?'B':null;
+    const mAbs=Math.abs(marketH), fAbs=pr.fairH;
+    const gap=fAbs-mAbs;                    // >0 ⇒ fair sâu hơn market
+    let label='', color='var(--c-muted)', side='';
+    if(mFav!==pr.fav && pr.fairH>=0.25){
+      label='⚠️ Trái chiều thị trường'; color='#facc15';
+      side='Power Rating chọn đội ngược kèo';
+    } else if(Math.abs(gap)<0.25){
+      label='≈ Đúng giá'; color='var(--c-muted)';
+      side=`Fair ≈ market (lệch ${gap.toFixed(2)})`;
+    } else if(gap>=0.25){
+      label='✅ +EV đội mạnh'; color='#3dd9b3';
+      side=`${pr.favTeam} bị thị trường định giá thấp (fair sâu hơn ${gap.toFixed(2)})`;
+    } else {
+      label='💡 +EV đội yếu'; color='#5b8def';
+      const und=pr.fav==='A'?tB:tA;
+      side=`${und} có giá trị (market chấp sâu hơn fair ${(-gap).toFixed(2)})`;
+    }
+    evHtml=`<div style="display:flex;justify-content:space-between;gap:8px;margin-top:6px;padding:6px 8px;background:rgba(255,255,255,.03);border-radius:6px;font-size:11px;flex-wrap:wrap;">
+        <span style="color:${color};font-weight:700;">${label}</span>
+        <span style="color:var(--c-body);">${side}</span>
+      </div>`;
+  }
+  const bar=(label,val,color)=>{
+    const pct=Math.max(0,Math.min(100,val*10));
+    return `<div style="display:flex;align-items:center;gap:6px;font-size:11px;">
+      <span style="width:74px;color:var(--c-body);">${label}</span>
+      <div style="flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${color};"></div>
+      </div>
+      <b style="width:34px;text-align:right;color:var(--c-ink);">${val.toFixed(2)}</b>
+    </div>`;
+  };
+  const fairTxt=pr.fairH===0?'Hoà (kèo 0)':`<b>${pr.favTeam}</b> chấp <b>${pr.fairH.toFixed(2)}</b>`;
+  const marketTxt=(marketH==null||isNaN(marketH))?'<span style="color:var(--c-muted);">chưa có kèo</span>'
+    :(marketH===0?'Hoà (kèo 0)':`<b>${marketH<0?tA:tB}</b> chấp <b>${Math.abs(marketH).toFixed(2)}</b>`);
+  return `<div id="prBox-${idx}" data-market="${marketH==null||isNaN(marketH)?'':marketH}" style="background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.18);border-radius:10px;padding:8px 10px;margin-top:8px;">
+      <div style="font-size:10.5px;color:#c4a8ff;font-weight:700;margin-bottom:6px;">⚖️ Power Rating · Kèo chấp công bằng <span style="font-weight:500;color:var(--c-muted);">(thang 0–10, sân nhà +0.25)</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        ${bar(tA+' (sân nhà)',pr.sAadj,'#3dd9b3')}
+        ${bar(tB,pr.sB,'#e07870')}
+      </div>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:8px;padding:6px 8px;background:rgba(0,0,0,.18);border-radius:6px;font-size:11.5px;flex-wrap:wrap;">
+        <span style="color:var(--c-body);">Δ = <b style="color:#a78bfa;">${Math.abs(pr.delta).toFixed(2)}</b></span>
+        <span style="color:var(--c-body);">Fair: ${fairTxt}</span>
+        <span style="color:var(--c-body);">Market: ${marketTxt}</span>
+      </div>
+      ${evHtml}
+    </div>`;
+}
+
 // Lưu cặp đội từng trận (theo idx) để vẽ lại biểu đồ năng lực khi người dùng kéo thanh trượt trọng số,
 // mà không cần render lại toàn bộ danh sách (giữ nguyên trạng thái mở/kèo tùy chỉnh của các trận).
 const _capPairs={};
@@ -1130,6 +1224,12 @@ function updateCapWeights(idx){
   set('cwValLbl-'+idx,w.val); set('cwFormLbl-'+idx,w.form); set('cwCoachLbl-'+idx,w.coach);
   const p=_capPairs[idx], el=document.getElementById('capSvg-'+idx);
   if(p&&el) el.innerHTML=distCurveSVG(p.tA,p.tB,capabilityBuckets(p.a,p.b,w),null,'c'+idx);
+  const prEl=document.getElementById('prBox-'+idx);
+  if(p&&prEl){
+    const raw=prEl.getAttribute('data-market');
+    const m=(raw===''||raw==null)?null:parseFloat(raw);
+    prEl.outerHTML=powerRatingHtml(p.tA,p.tB,idx,isNaN(m)?null:m);
+  }
 }
 
 // ── Thống kê độ chính xác dự đoán ──
@@ -1445,6 +1545,7 @@ function renderPredictions(){
           ${playedBadge?`<div style="margin-bottom:8px;">${playedBadge}</div>`:''}
           ${predBar}
           ${capChart}
+          ${powerRatingHtml(tA,tB,idx, Object.prototype.hasOwnProperty.call(HANDICAP_GIBOT,playedKey)?HANDICAP_GIBOT[playedKey]:(Object.prototype.hasOwnProperty.call(HANDICAP_GIBOT_HISTORY,playedKey)?HANDICAP_GIBOT_HISTORY[playedKey]:null))}
           ${realFormPairHtml(tA,tB)}
           ${coachImpactPairHtml(tA,tB)}
           <div class="pred-explain">
