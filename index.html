@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='26/06/2026 — lượt 3: bảng A–F đã xong (12 KQ); bảng G–L có kèo gibot (20 trận). Chờ ảnh bet365 cho G,H,I,J,K,L.';
+if(_lu) _lu.textContent='27/06/2026 — lượt 3: bảng A–I đã xong (18 KQ + kèo bet365); bảng J–L chờ kết quả (7 trận).';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -609,20 +609,21 @@ const PLAYED_R2 = {
   // Lượt 3 bảng D (26/06/2026 — đã xong)
   "Paraguay|Australia": [0,0],
   "Thổ Nhĩ Kỳ|Mỹ": [3,2],
+  // Lượt 3 bảng G, H, I (27/06/2026 — đã xong, xác minh ESPN)
+  "Na Uy|Pháp": [1,4],
+  "Senegal|Iraq": [5,0],
+  "Cape Verde|Saudi Arabia": [0,0],
+  "Uruguay|Tây Ban Nha": [0,1],
+  "Ai Cập|Iran": [1,1],
+  "New Zealand|Bỉ": [1,5],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
 // Quy ước: số âm = tA (đội bên trái) được kèo chấp; số dương = tB được kèo chấp.
 // Lượt 3 — lấy từ gibot.top ngày 24/06/2026 (trận #49–#54).
 const HANDICAP_GIBOT = {
-  // Bảng A,B,C,D,E,F đã đá xong 25–26/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
-  // Bảng G, H, I (kèo bet365 26/06/2026 — dùng main AH làm proxy gibot)
-  "New Zealand|Bỉ": 2.0,           // Bỉ chấp 2.0 (gibot 26/06)
-  "Ai Cập|Iran": -0.5,             // Ai Cập chấp 0.5 (gibot 26/06)
-  "Cape Verde|Saudi Arabia": 0,    // ngang bằng (gibot 26/06)
-  "Uruguay|Tây Ban Nha": 1.0,      // TBN chấp 1.0 (gibot 26/06)
-  "Na Uy|Pháp": 1.0,               // Pháp chấp 1.0 (gibot 26/06)
-  "Senegal|Iraq": -2.0,            // Senegal chấp 2.0 (gibot 26/06)
+  // Bảng A,B,C,D,E,F đã đá xong → đã chuyển sang HANDICAP_GIBOT_HISTORY.
+  // Bảng G, H, I đã đá xong 27/06 → đã chuyển sang HANDICAP_GIBOT_HISTORY.
   // Bảng J, K, L (gibot 26/06/2026)
   "Algeria|Áo": 0.5,               // Áo chấp 0.5
   "Jordan|Argentina": 2.0,         // Argentina chấp 2.0
@@ -654,6 +655,13 @@ const HANDICAP_GIBOT_HISTORY = {
   // Lượt 3 bảng D (26/06/2026 — đã xong)
   "Paraguay|Australia": -0.5,
   "Thổ Nhĩ Kỳ|Mỹ": 0.5,
+  // Lượt 3 bảng G, H, I (27/06/2026 — đã xong)
+  "New Zealand|Bỉ": 2.0,
+  "Ai Cập|Iran": -0.5,
+  "Cape Verde|Saudi Arabia": 0,
+  "Uruguay|Tây Ban Nha": 1.0,
+  "Na Uy|Pháp": 1.0,
+  "Senegal|Iraq": -2.0,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -672,38 +680,7 @@ const HANDICAP_GIBOT_HISTORY = {
 //   ]}
 const BET365_ODDS = {
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
-  // Bảng A,B,C,D,E,F đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
-  // Bảng G, H, I — kèo bet365 26/06/2026
-  "Ai Cập|Iran": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:2.375, oddsUnd:1.550},
-    {line:-1.5, oddsFav:5.500, oddsUnd:1.150},
-  ]},
-  "New Zealand|Bỉ": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.140, oddsUnd:5.750},
-    {line:-1.5, oddsFav:1.450, oddsUnd:2.675},
-    {line:-2.5, oddsFav:2.100, oddsUnd:1.700},
-    {line:-3.5, oddsFav:3.450, oddsUnd:1.300},
-  ]},
-  "Cape Verde|Saudi Arabia": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:2.600, oddsUnd:1.475},
-    {line:-1.5, oddsFav:5.750, oddsUnd:1.140},
-  ]},
-  "Uruguay|Tây Ban Nha": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.500, oddsUnd:2.500},
-    {line:-1.5, oddsFav:2.500, oddsUnd:1.500},
-    {line:-2.5, oddsFav:5.250, oddsUnd:1.160},
-  ]},
-  "Na Uy|Pháp": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.550, oddsUnd:2.375},
-    {line:-1.5, oddsFav:2.375, oddsUnd:1.550},
-    {line:-2.5, oddsFav:4.250, oddsUnd:1.210},
-  ]},
-  "Senegal|Iraq": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.220, oddsUnd:4.150},
-    {line:-1.5, oddsFav:1.650, oddsUnd:2.200},
-    {line:-2.5, oddsFav:2.675, oddsUnd:1.450},
-    {line:-3.5, oddsFav:4.800, oddsUnd:1.175},
-  ]},
+  // Bảng A–I đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
   // Bảng K, L — kèo bet365 27/06/2026
   "Croatia|Ghana": {fav:'A', ladder:[
     {line:-0.5, oddsFav:1.850, oddsUnd:2.000},
