@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='28/06/2026 — vòng bảng xong toàn bộ (24 KQ lượt 3 A–L). Chuyển sang vòng knockout — play-off đầu tiên Nam Phi vs Canada (29/06).';
+if(_lu) _lu.textContent='28/06/2026 — vòng bảng xong toàn bộ (24 KQ lượt 3 A–L). Play-off knockout Nam Phi vs Canada (29/06), đã thêm REAL_FORM Canada 5/5 xG từ SofaScore.';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -1990,6 +1990,14 @@ const REAL_FORM = {
     {opp:"Qatar",        res:"W", gf:3, ga:0, xgf:null, xga:null, oppRank:38},
     {opp:"Palestine",    res:"D", gf:2, ga:2, xgf:null, xga:null, oppRank:99},
     {opp:"Syria",        res:"L", gf:0, ga:1, xgf:null, xga:null, oppRank:97},
+  ],
+  // Canada (CONCACAF Gold Cup + giao hữu UEFA — 5/5 xG ✅) — kéo SofaScore id 4752, 28/06/2026
+  "Canada":[
+    {opp:"Colombia",     res:"D", gf:0, ga:0, xgf:0.84, xga:0.10, oppRank:14},
+    {opp:"Australia",    res:"L", gf:0, ga:1, xgf:2.61, xga:0.71, oppRank:27},
+    {opp:"Wales",        res:"L", gf:0, ga:1, xgf:0.94, xga:0.92, oppRank:30},
+    {opp:"Romania",      res:"L", gf:0, ga:3, xgf:1.80, xga:1.04, oppRank:46},
+    {opp:"Guatemala",    res:"D", gf:1, ga:1, xgf:1.39, xga:1.18, oppRank:106},
   ],
   // Ecuador (CONMEBOL → 0/5 xG)
   "Ecuador":[
