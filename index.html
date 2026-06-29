@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='28/06/2026 — vòng bảng xong toàn bộ (24 KQ lượt 3 A–L). Play-off knockout Nam Phi vs Canada (29/06), đã thêm REAL_FORM Canada 5/5 xG từ SofaScore.';
+if(_lu) _lu.textContent='29/06/2026 — knockout R32: Nam Phi 0–1 Canada (hoà kèo). Còn 8 trận R32 (29/06–02/07) — đã có kèo gibot, 3 trận có kèo bet365.';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -560,6 +560,16 @@ const FIXTURES=[
   ["J","Algeria","Áo"],["J","Jordan","Argentina"],["J","Nam Phi","Canada"],
   ["K","Colombia","Bồ Đào Nha"],["K","CHDC Congo","Uzbekistan"],
   ["L","Croatia","Ghana"],["L","Panama","Anh"],
+  // Vòng knockout R32 (29/06–02/07/2026 — play-off + R32)
+  ["R32","Nam Phi","Canada"],
+  ["R32","Brazil","Nhật Bản"],
+  ["R32","Đức","Paraguay"],
+  ["R32","Hà Lan","Morocco"],
+  ["R32","Bờ Biển Ngà","Na Uy"],
+  ["R32","Pháp","Thụy Điển"],
+  ["R32","Mexico","Ecuador"],
+  ["R32","Mỹ","Bosnia & Herzegovina"],
+  ["R32","Anh","CHDC Congo"],
 ];
 
 // ── Kho TÍCH LŨY kết quả mọi trận đã đá qua các lượt (key: "home|away", value: [gf,ga]) ──
@@ -623,6 +633,8 @@ const PLAYED_R2 = {
   "CHDC Congo|Uzbekistan": [3,1],
   "Croatia|Ghana": [2,1],
   "Panama|Anh": [0,2],
+  // Knockout R32 (29/06/2026)
+  "Nam Phi|Canada": [0,1],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
@@ -630,8 +642,15 @@ const PLAYED_R2 = {
 // Lượt 3 — lấy từ gibot.top ngày 24/06/2026 (trận #49–#54).
 const HANDICAP_GIBOT = {
   // Bảng A–L đã đá xong → đã chuyển sang HANDICAP_GIBOT_HISTORY.
-  // Còn trận play-off knockout Nam Phi|Canada chưa đá.
-  "Nam Phi|Canada": 1.0,           // Canada chấp 1.0
+  // Knockout R32 (29/06–02/07/2026 — kéo từ gibot.top 29/06)
+  "Brazil|Nhật Bản": -1.0,         // Brazil chấp 1.0 (trận #74)
+  "Đức|Paraguay": -1.5,            // Đức chấp 1.5 (trận #77)
+  "Hà Lan|Morocco": -0.5,          // Hà Lan chấp 0.5 (trận #75)
+  "Bờ Biển Ngà|Na Uy": 0.5,        // Na Uy chấp 0.5 (trận #78)
+  "Pháp|Thụy Điển": -1.5,          // Pháp chấp 1.5 (trận #79)
+  "Mexico|Ecuador": -0.5,          // Mexico chấp 0.5 (trận #81)
+  "Mỹ|Bosnia & Herzegovina": -1.0, // Mỹ chấp 1.0 (trận #76)
+  "Anh|CHDC Congo": -1.5,          // Anh chấp 1.5 (trận #82)
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -669,6 +688,8 @@ const HANDICAP_GIBOT_HISTORY = {
   "CHDC Congo|Uzbekistan": -0.5,
   "Croatia|Ghana": -0.5,
   "Panama|Anh": 2.0,
+  // Knockout R32 (29/06/2026 — đã xong)
+  "Nam Phi|Canada": 1.0,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -688,11 +709,21 @@ const HANDICAP_GIBOT_HISTORY = {
 const BET365_ODDS = {
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
   // Bảng A–L vòng bảng đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
-  // Còn play-off knockout 29/06: Nam Phi|Canada (giữ kèo bet365 để dự đoán).
-  "Nam Phi|Canada": {fav:'B', ladder:[
+  // Knockout R32 (29/06/2026)
+  "Brazil|Nhật Bản": {fav:'A', ladder:[
     {line:-0.5, oddsFav:1.675, oddsUnd:2.150},
     {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
     {line:-2.5, oddsFav:6.250, oddsUnd:1.120},
+  ]},
+  "Đức|Paraguay": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.325, oddsUnd:3.300},
+    {line:-1.5, oddsFav:1.975, oddsUnd:1.875},
+    {line:-2.5, oddsFav:3.300, oddsUnd:1.325},
+    {line:-3.5, oddsFav:6.600, oddsUnd:1.110},
+  ]},
+  "Hà Lan|Morocco": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.250, oddsUnd:1.625},
+    {line:-1.5, oddsFav:4.400, oddsUnd:1.200},
   ]},
 };
 
@@ -831,6 +862,22 @@ const BET365_ODDS_HISTORY = {
     {line:-2.0, oddsFav:1.850, oddsUnd:2.000},
     {line:-2.5, oddsFav:2.350, oddsUnd:1.575},
     {line:-3.0, oddsFav:3.450, oddsUnd:1.300},
+  ]},
+  // Knockout R32 (29/06/2026)
+  "Brazil|Nhật Bản": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.675, oddsUnd:2.150},
+    {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
+    {line:-2.5, oddsFav:6.250, oddsUnd:1.120},
+  ]},
+  "Đức|Paraguay": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.325, oddsUnd:3.300},
+    {line:-1.5, oddsFav:1.975, oddsUnd:1.875},
+    {line:-2.5, oddsFav:3.300, oddsUnd:1.325},
+    {line:-3.5, oddsFav:6.600, oddsUnd:1.110},
+  ]},
+  "Hà Lan|Morocco": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.250, oddsUnd:1.625},
+    {line:-1.5, oddsFav:4.400, oddsUnd:1.200},
   ]},
 };
 
