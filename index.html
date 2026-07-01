@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='30/06/2026 — R32: 4 trận xong (Nam Phi 0–1 Canada, Brazil 2–1 Nhật, Đức 1–1 Paraguay, Hà Lan 1–1 Morocco). Còn 5 trận (01–02/07).';
+if(_lu) _lu.textContent='01/07/2026 — R32: 7/9 xong (BBN 1–2 Na Uy, Pháp 3–0 Thụy Điển, Mexico 2–0 Ecuador mới nhất). Chờ Mỹ–Bosnia, Anh–CHDC + R16 Bỉ–Senegal.';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -570,6 +570,8 @@ const FIXTURES=[
   ["R32","Mexico","Ecuador"],
   ["R32","Mỹ","Bosnia & Herzegovina"],
   ["R32","Anh","CHDC Congo"],
+  // Vòng knockout R16 (đầu 07/2026)
+  ["R16","Bỉ","Senegal"],
 ];
 
 // ── Kho TÍCH LŨY kết quả mọi trận đã đá qua các lượt (key: "home|away", value: [gf,ga]) ──
@@ -633,11 +635,14 @@ const PLAYED_R2 = {
   "CHDC Congo|Uzbekistan": [3,1],
   "Croatia|Ghana": [2,1],
   "Panama|Anh": [0,2],
-  // Knockout R32 (29–30/06/2026)
+  // Knockout R32 (29/06–01/07/2026)
   "Nam Phi|Canada": [0,1],
   "Brazil|Nhật Bản": [2,1],
   "Đức|Paraguay": [1,1],
   "Hà Lan|Morocco": [1,1],
+  "Bờ Biển Ngà|Na Uy": [1,2],
+  "Pháp|Thụy Điển": [3,0],
+  "Mexico|Ecuador": [2,0],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
@@ -645,12 +650,11 @@ const PLAYED_R2 = {
 // Lượt 3 — lấy từ gibot.top ngày 24/06/2026 (trận #49–#54).
 const HANDICAP_GIBOT = {
   // Bảng A–L đã đá xong → đã chuyển sang HANDICAP_GIBOT_HISTORY.
-  // Knockout R32 (29/06–02/07/2026 — kéo từ gibot.top 29/06)
-  "Bờ Biển Ngà|Na Uy": 0.5,        // Na Uy chấp 0.5 (trận #78)
-  "Pháp|Thụy Điển": -1.5,          // Pháp chấp 1.5 (trận #79)
-  "Mexico|Ecuador": -0.5,          // Mexico chấp 0.5 (trận #81)
+  // Knockout R32 (còn 2 trận chưa đá)
   "Mỹ|Bosnia & Herzegovina": -1.0, // Mỹ chấp 1.0 (trận #76)
   "Anh|CHDC Congo": -1.5,          // Anh chấp 1.5 (trận #82)
+  // R16 (đầu 07/2026 — main AH quarter -0.25 → proxy -0.5)
+  "Bỉ|Senegal": -0.5,              // Bỉ chấp 0.5
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -688,11 +692,14 @@ const HANDICAP_GIBOT_HISTORY = {
   "CHDC Congo|Uzbekistan": -0.5,
   "Croatia|Ghana": -0.5,
   "Panama|Anh": 2.0,
-  // Knockout R32 (29–30/06/2026 — đã xong)
+  // Knockout R32 (29/06–01/07/2026 — đã xong)
   "Nam Phi|Canada": 1.0,
   "Brazil|Nhật Bản": -1.0,
   "Đức|Paraguay": -1.5,
   "Hà Lan|Morocco": -0.5,
+  "Bờ Biển Ngà|Na Uy": 0.5,
+  "Pháp|Thụy Điển": -1.5,
+  "Mexico|Ecuador": -0.5,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -713,26 +720,21 @@ const BET365_ODDS = {
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
   // Bảng A–L vòng bảng đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
   // Knockout R32 — Brazil-Nhật, Đức-Paraguay, Hà Lan-Morocco đã đá xong, xóa khỏi đây.
-  // Knockout R32 (30/06–02/07/2026 — còn 5 trận chưa đá)
-  "Bờ Biển Ngà|Na Uy": {fav:'B', ladder:[
+  // Knockout R32 (còn 2 trận chưa đá) + R16
+  "Mỹ|Bosnia & Herzegovina": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.375, oddsUnd:3.000},
+    {line:-1.5, oddsFav:2.075, oddsUnd:1.725},
+    {line:-2.5, oddsFav:3.700, oddsUnd:1.260},
+  ]},
+  "Bỉ|Senegal": {fav:'A', ladder:[
     {line:-0.5, oddsFav:2.100, oddsUnd:1.700},
     {line:-1.5, oddsFav:3.900, oddsUnd:1.240},
   ]},
-  "Pháp|Thụy Điển": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.325, oddsUnd:3.300},
-    {line:-1.5, oddsFav:1.825, oddsUnd:2.025},
-    {line:-2.5, oddsFav:3.000, oddsUnd:1.375},
-    {line:-3.5, oddsFav:5.500, oddsUnd:1.150},
-  ]},
-  "Mexico|Ecuador": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:2.200, oddsUnd:1.650},
-    {line:-1.5, oddsFav:4.650, oddsUnd:1.180},
-  ]},
   "Anh|CHDC Congo": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.260, oddsUnd:3.700},
-    {line:-1.5, oddsFav:1.850, oddsUnd:2.000},
-    {line:-2.5, oddsFav:3.100, oddsUnd:1.350},
-    {line:-3.5, oddsFav:6.400, oddsUnd:1.115},
+    {line:-0.5, oddsFav:1.275, oddsUnd:3.550},
+    {line:-1.5, oddsFav:1.950, oddsUnd:1.900},
+    {line:-2.5, oddsFav:3.450, oddsUnd:1.300},
+    {line:-3.5, oddsFav:7.000, oddsUnd:1.100},
   ]},
 };
 
@@ -902,11 +904,20 @@ const BET365_ODDS_HISTORY = {
     {line:-0.5, oddsFav:2.200, oddsUnd:1.650},
     {line:-1.5, oddsFav:4.650, oddsUnd:1.180},
   ]},
+  "Mỹ|Bosnia & Herzegovina": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.375, oddsUnd:3.000},
+    {line:-1.5, oddsFav:2.075, oddsUnd:1.725},
+    {line:-2.5, oddsFav:3.700, oddsUnd:1.260},
+  ]},
+  "Bỉ|Senegal": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.100, oddsUnd:1.700},
+    {line:-1.5, oddsFav:3.900, oddsUnd:1.240},
+  ]},
   "Anh|CHDC Congo": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.260, oddsUnd:3.700},
-    {line:-1.5, oddsFav:1.850, oddsUnd:2.000},
-    {line:-2.5, oddsFav:3.100, oddsUnd:1.350},
-    {line:-3.5, oddsFav:6.400, oddsUnd:1.115},
+    {line:-0.5, oddsFav:1.275, oddsUnd:3.550},
+    {line:-1.5, oddsFav:1.950, oddsUnd:1.900},
+    {line:-2.5, oddsFav:3.450, oddsUnd:1.300},
+    {line:-3.5, oddsFav:7.000, oddsUnd:1.100},
   ]},
 };
 
