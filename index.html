@@ -535,7 +535,7 @@ let DATA=RAW.map(r=>{
 [...DATA].sort((a,b)=>b.fifa-a.fifa).forEach((d,i)=>{ d.rank=i+1; });
 
 var _lu=document.getElementById('sidebarUpdate');
-if(_lu) _lu.textContent='03/07/2026 — R16: 4 trận xong (Bỉ 2–2 Senegal, TBN 3–0 Áo, BĐN 2–1 Croatia, Thụy Sỹ 3–0 Algeria). Còn 7 trận R16 chờ đá.';
+if(_lu) _lu.textContent='06/07/2026 — R16 xong (Anh 3–2 Mexico, Na Uy 2–0 Brazil, Morocco 3–0 Canada, Pháp 1–0 Paraguay, Colombia 1–0 Ghana, Cape Verde 1–1 Argentina, Australia 1–1 Ai Cập). Bắt đầu Tứ kết: BĐN–TBN, Mỹ–Bỉ.';
 
 function fmt(n){return n.toFixed(1);}
 
@@ -582,6 +582,10 @@ const FIXTURES=[
   ["R16","Paraguay","Pháp"],
   ["R16","Brazil","Na Uy"],
   ["R16","Mexico","Anh"],
+  // Tứ kết (QF) 08-09/07/2026
+  ["QF","Bồ Đào Nha","Tây Ban Nha"],
+  ["QF","Mỹ","Bỉ"],
+  ["QF","Argentina","Ai Cập"],
 ];
 
 // ── Kho TÍCH LŨY kết quả mọi trận đã đá qua các lượt (key: "home|away", value: [gf,ga]) ──
@@ -665,6 +669,8 @@ const PLAYED_R2 = {
   "Colombia|Ghana": [1,0],
   "Paraguay|Pháp": [0,1],
   "Canada|Morocco": [0,3],
+  "Brazil|Na Uy": [0,2],
+  "Mexico|Anh": [2,3],
 };
 
 // ── Kèo chấp tự động lấy từ gibot.top (key: "tA|tB", value: chấp tính theo B−A) ──
@@ -673,9 +679,10 @@ const PLAYED_R2 = {
 const HANDICAP_GIBOT = {
   // Bảng A–L đã đá xong → đã chuyển sang HANDICAP_GIBOT_HISTORY.
   // R16 thêm từ gibot.top 01/07/2026 (chưa có ảnh bet365 → chưa có quarter chi tiết)
-  // R16 mới thêm từ gibot 03/07 (chưa có ảnh bet365)
-  "Brazil|Na Uy": -1.0,           // Brazil chấp 1.0 (#91)
-  "Mexico|Anh": 0.5,              // Anh chấp 0.5 (#92) (#88)
+  // QF (chờ ảnh gibot cho giá trị chính xác — tạm suy từ bet365 main line)
+  "Bồ Đào Nha|Tây Ban Nha": 0.5,  // TBN chấp 0.5 (main -0.5)
+  "Mỹ|Bỉ": 0,                     // pk (main 0.0)
+  "Argentina|Ai Cập": -1.5,       // Argentina chấp 1.5 (main -1.0,-1.5 quarter → tạm 1.5, chờ ảnh gibot)
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -732,6 +739,8 @@ const HANDICAP_GIBOT_HISTORY = {
   "Colombia|Ghana": -1.0,
   "Paraguay|Pháp": 2.0,
   "Canada|Morocco": 1.0,
+  "Brazil|Na Uy": -1.0,
+  "Mexico|Anh": 0.5,
 };
 
 // ── Dữ liệu kèo chấp bán nguyên (Asian handicap) từ bet365 cho từng trận (key: "tA|tB") ──
@@ -753,14 +762,19 @@ const BET365_ODDS = {
   // Bảng A–L vòng bảng đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
   // Knockout R32 — Brazil-Nhật, Đức-Paraguay, Hà Lan-Morocco đã đá xong, xóa khỏi đây.
   // R32/R16 (các trận đã đá — xóa khỏi đây, giữ trong HISTORY)
-  "Brazil|Na Uy": {fav:'A', ladder:[
-    {line:-0.5, oddsFav:1.775, oddsUnd:2.025},
-    {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
-    {line:-2.5, oddsFav:5.900, oddsUnd:1.130},
+  "Bồ Đào Nha|Tây Ban Nha": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.925, oddsUnd:1.925},
+    {line:-1.5, oddsFav:3.300, oddsUnd:1.325},
+    {line:-2.5, oddsFav:7.000, oddsUnd:1.100},
   ]},
-  "Mexico|Anh": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:2.350, oddsUnd:1.575},
-    {line:-1.5, oddsFav:5.000, oddsUnd:1.170},
+  "Mỹ|Bỉ": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:2.500, oddsUnd:1.500},
+    {line:-1.5, oddsFav:4.800, oddsUnd:1.175},
+  ]},
+  "Argentina|Ai Cập": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.375, oddsUnd:3.000},
+    {line:-1.5, oddsFav:2.150, oddsUnd:1.675},
+    {line:-2.5, oddsFav:4.000, oddsUnd:1.230},
   ]},
 };
 
@@ -976,9 +990,24 @@ const BET365_ODDS_HISTORY = {
     {line:-2.5, oddsFav:4.150, oddsUnd:1.220},
   ]},
   "Canada|Morocco": {fav:'B', ladder:[
-    {line:-0.5, oddsFav:1.750, oddsUnd:2.050},
-    {line:-1.5, oddsFav:3.100, oddsUnd:1.350},
+    {line:-0.5, oddsFav:1.775, oddsUnd:2.025},
+    {line:-1.5, oddsFav:3.300, oddsUnd:1.325},
+    {line:-2.5, oddsFav:7.000, oddsUnd:1.100},
+  ]},
+  "Paraguay|Pháp": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:1.190, oddsUnd:4.500},
+    {line:-1.5, oddsFav:1.625, oddsUnd:2.250},
+    {line:-2.5, oddsFav:2.600, oddsUnd:1.475},
+    {line:-3.5, oddsFav:4.650, oddsUnd:1.180},
+  ]},
+  "Brazil|Na Uy": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.775, oddsUnd:2.025},
+    {line:-1.5, oddsFav:3.000, oddsUnd:1.375},
     {line:-2.5, oddsFav:5.900, oddsUnd:1.130},
+  ]},
+  "Mexico|Anh": {fav:'B', ladder:[
+    {line:-0.5, oddsFav:2.350, oddsUnd:1.575},
+    {line:-1.5, oddsFav:5.000, oddsUnd:1.170},
   ]},
 };
 
