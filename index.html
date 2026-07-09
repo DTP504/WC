@@ -587,6 +587,8 @@ const FIXTURES=[
   ["QF","Mỹ","Bỉ"],
   ["QF","Argentina","Ai Cập"],
   ["QF","Thụy Sỹ","Colombia"],
+  // Bán kết (SF)
+  ["SF","Pháp","Morocco"],
 ];
 
 // ── Kho TÍCH LŨY kết quả mọi trận đã đá qua các lượt (key: "home|away", value: [gf,ga]) ──
@@ -685,6 +687,7 @@ const HANDICAP_GIBOT = {
   // Bảng A–L đã đá xong → đã chuyển sang HANDICAP_GIBOT_HISTORY.
   // R16 thêm từ gibot.top 01/07/2026 (chưa có ảnh bet365 → chưa có quarter chi tiết)
   // QF (chờ ảnh gibot cho giá trị chính xác — tạm suy từ bet365 main line)
+  "Pháp|Morocco": -1.0,  // Pháp chấp 1.0 (SF, main -1.0)
 };
 
 // ── Lưu kèo gibot của mọi trận đã kết thúc (để tính kèo-accuracy bền vững) ──
@@ -764,6 +767,11 @@ const HANDICAP_GIBOT_HISTORY = {
 //     {line:-1.5, oddsFav:2.60, oddsUnd:1.48},
 //   ]}
 const BET365_ODDS = {
+  "Pháp|Morocco": {fav:'A', ladder:[
+    {line:-0.5, oddsFav:1.550, oddsUnd:2.375},
+    {line:-1.5, oddsFav:2.500, oddsUnd:1.500},
+    {line:-2.5, oddsFav:5.250, oddsUnd:1.160},
+  ]},
   // ── Kèo bet365 các trận CHƯA đá (xóa khi đá xong; bản lưu vĩnh viễn ở BET365_ODDS_HISTORY) ──
   // Bảng A–L vòng bảng đã đá xong → đã xóa khỏi đây (vẫn còn trong HISTORY để tính accuracy).
   // Knockout R32 — Brazil-Nhật, Đức-Paraguay, Hà Lan-Morocco đã đá xong, xóa khỏi đây.
